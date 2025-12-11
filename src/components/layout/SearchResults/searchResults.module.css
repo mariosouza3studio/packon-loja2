@@ -1,0 +1,123 @@
+/* Camada de fundo para clicar fora e fechar */
+.overlayBackdrop {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 998;
+  background: transparent;
+}
+
+.megaBox {
+  position: fixed;
+  /* Ajuste para ficar logo abaixo do header */
+  top: 160px; 
+  left: 50%;
+  transform: translateX(-50%);
+  
+  width: 90%;
+  max-width: 1480px;
+
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 44px;
+  
+  overflow: hidden; /* Essencial para a máscara funcionar */
+  
+  /* ESTADO INICIAL ZERADO */
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
+  
+  /* IMPORTANTE: Padding aqui deve ser ZERO para não pular na animação */
+  padding: 0; 
+
+  z-index: 999;
+}
+
+/* NOVA CLASSE: O Wrapper que segura o padding e o conteúdo */
+.innerWrapper {
+  width: 100%;
+  /* O padding vive aqui agora, fixo e seguro */
+  padding: 2.5rem 2rem; 
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  width: 100%;
+}
+/* Cada Item do Grid */
+.gridItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Espaço entre foto e texto */
+  text-decoration: none;
+  padding: 1rem;
+  border-radius: 16px;
+  transition: background 0.3s;
+}
+
+.gridItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.imgWrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 50px; /* Na imagem parece levemente arredondado ou pill */
+  overflow: hidden;
+  position: relative;
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+
+/* Se quiser o estilo "Pill" (cápsula) da imagem 2, use border-radius 99px no imgWrapper 
+   e diminua a largura para ~30px. O código acima é para a Imagem 1 (Grid maior). */
+
+
+
+.placeholder {
+  width: 100%; height: 100%; background: #222;
+}
+
+.productName {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.2;
+}
+
+.emptyState {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+  width: 100%;
+}
+
+/* --- RESPONSIVIDADE --- */
+
+/* Laptops menores: 3 colunas */
+@media (max-width: 1200px) {
+  .gridContainer {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tablets: 2 colunas */
+@media (max-width: 900px) {
+  .gridContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile: Esconde o MegaBox (pois usamos a lista inline no menu) */
+@media (max-width: 768px) {
+  .megaBox, .overlayBackdrop {
+    display: none !important;
+  }
+}

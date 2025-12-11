@@ -1,0 +1,140 @@
+.section {
+  padding: clamp(4rem, 8vh, 10rem) 2rem;
+  background-color: #020202;
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: clamp(2rem, 5vh, 4rem);
+  z-index: 10;
+  position: relative;
+}
+
+.title {
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  color: white;
+  font-weight: 500;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  
+  /* Altura responsiva Desktop */
+  height: clamp(450px, 65vh, 800px);
+  
+  max-width: 1500px;
+  margin: 0 auto;
+  gap: clamp(0.5rem, 1vw, 1.5rem);
+}
+
+.panel {
+  position: relative;
+  height: 100%; 
+  border-radius: 40px;
+  overflow: hidden;
+  cursor: pointer;
+  
+  /* Padrão desktop */
+  flex-grow: 1; 
+  
+  transition: border-color 0.3s ease;
+  will-change: flex-grow, height; 
+  isolation: isolate; 
+}
+
+.imageWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bgImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1s ease;
+}
+
+.panel.active .bgImage {
+  transform: scale(1.05);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.8) 0%,    
+    rgba(0,0,0,0.2) 50%,
+    rgba(0,0,0,0.8) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.floatingLabel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  
+  /* Estado inicial Desktop */
+  transform: translate(-50%, -50%) rotate(-90deg);
+  
+  color: white;
+  font-size: clamp(1.8rem, 3vw, 3.5rem);
+  font-weight: 200;
+  white-space: nowrap;
+  margin: 0;
+  line-height: 1;
+  
+  z-index: 20;
+  pointer-events: none;
+  
+  will-change: top, transform; 
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- MOBILE --- */
+@media (max-width: 900px) {
+  .container { 
+    flex-direction: column; 
+    height: auto; 
+    min-height: auto;
+  }
+
+  .panel { 
+    flex-grow: 0; 
+    width: 100%; 
+    height: 80px; 
+  }
+  
+  /* --- NOVA REGRA: LIMITE DE 4 ITENS NO MOBILE --- */
+  /* Seleciona do 5º item em diante e esconde */
+  .panel:nth-child(n+5) {
+    display: none;
+  }
+
+  .overlay {
+
+  background: linear-gradient(
+    to left,
+    rgba(0,0,0,0.8) 0%,    
+    rgba(0,0,0,0.2) 50%,
+    rgba(0,0,0,0.8) 100%
+  );
+
+}
+  
+  .floatingLabel {
+    transform: translate(-50%, -50%) rotate(0deg);
+    font-size: 1.5rem;
+  }
+}

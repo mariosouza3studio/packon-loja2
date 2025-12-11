@@ -1,0 +1,117 @@
+.section {
+  padding: 8rem 2rem 2rem 2rem;
+  background-color: #020202; 
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 5;
+}
+
+/* Título da Sessão */
+.title {
+  font-size: 3rem;
+  font-weight: 400; 
+  margin-bottom: 8rem;
+  text-align: center;
+  max-width: 900px;
+}
+
+/* Container dos 3 itens */
+.grid {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 4rem; 
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Cada Item (Card) */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1; 
+  max-width: 350px;
+}
+
+/* Ícone */
+.iconWrapper {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Título do Card */
+.cardTitle {
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  white-space: nowrap; 
+}
+
+/* Descrição */
+.cardDesc {
+  font-size: 1rem;
+  color: #ccc; 
+  font-weight: 300;
+  line-height: 1.5;
+  max-width: 400px; 
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .grid {
+    gap: 2rem;
+  }
+}
+
+/* --- MOBILE AJUSTADO (Refinado) --- */
+@media (max-width: 768px) {
+  .section {
+    /* Menos padding no topo para aproximar da sessão anterior */
+    padding: 4rem 1.5rem 2rem 1.5rem; 
+  }
+
+  .title {
+    /* Reduzido para proporção correta no mobile */
+    font-size: 2rem; 
+    margin-bottom: 4rem; /* Aproxima dos cards */
+    line-height: 1.2;
+  }
+  
+  .grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem; /* Espaço entre cada benefício reduzido */
+  }
+  
+  .card {
+    /* Garante que o texto não fique muito largo no mobile */
+    max-width: 300px; 
+  }
+
+  .iconWrapper {
+    margin-bottom: 1rem;
+    /* Reduz levemente o ícone para acompanhar o texto menor */
+    transform: scale(0.85); 
+  }
+  
+  .cardTitle {
+    /* Redução drástica para não brigar com o título principal */
+    font-size: 1.25rem; 
+    margin-bottom: 0.5rem;
+    white-space: normal; /* Permite quebrar linha se precisar */
+  }
+
+  .cardDesc {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+    line-height: 1.4;
+  }
+}

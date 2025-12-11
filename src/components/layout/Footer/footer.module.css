@@ -1,0 +1,30 @@
+.footer {
+  position: relative;
+  background-color: #020202;
+  height: 50vh; /* Altura considerável para dar respiro */
+  width: 100%;
+  overflow: hidden; /* Corta o que passar da tela */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bigLogo {
+  font-size: 35vw; /* GIGANTE: 35% da largura da tela por letra (aprox) */
+  font-weight: 900; /* Extra Bold */
+  line-height: 0.8;
+  margin: 0;
+  
+  /* Cor sutil: Quase preto, apenas um pouco mais claro que o fundo */
+  color: #0a0a0a; 
+  
+  /* Tira a seleção de texto para não atrapalhar */
+  user-select: none;
+  white-space: nowrap; /* Não quebra linha */
+  letter-spacing: -0.05em; /* Letras bem juntinhas */
+  
+  /* Centraliza absoluto visualmente se precisar, mas flexbox já cuida */
+  position: relative;
+  z-index: 1;
+}

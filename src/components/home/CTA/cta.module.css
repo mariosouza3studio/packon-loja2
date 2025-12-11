@@ -1,0 +1,81 @@
+.section {
+  padding: 12rem 2rem;
+  background-color: #020202;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* O container agora é aplicado na DIV do ScrollReveal */
+.container {
+  width: 100%;       
+  max-width: 900px;
+  display: flex;     
+  flex-direction: column;
+  align-items: center; 
+  gap: 3rem;
+  margin: 0 auto;    
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 400;
+  color: white;
+  margin: 0;
+  text-align: center; 
+  line-height: 1.2;
+}
+
+
+.button {
+  padding: 0.8rem 3rem;
+  border-radius: 999px;
+  border: 1px solid #FFDA45;
+  background: #FFDA45;
+  color: #020202;
+  font-size: clamp(1rem, 1.1vw, 1.1rem);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.button:hover {
+  background: white;
+  color: black;
+  border-color: white;
+}
+
+/* --- MOBILE AJUSTADO --- */
+@media (max-width: 768px) {
+  .section {
+    /* Reduz padding vertical para não ficar muito isolado no mobile */
+    padding: 6rem 1.5rem;
+  }
+
+  .container {
+    /* Aproxima o botão do texto */
+    gap: 2rem; 
+  }
+
+  .title {
+    /* Tamanho equilibrado com a sessão de Benefícios (que ficou ~1.75rem) */
+    font-size: 2rem; 
+  }
+  
+  /* Ajuste fino no botão para mobile */
+  .button {
+    padding: 0.7rem 2.5rem; /* Um pouco menor */
+    font-size: 0.95rem;
+    width: 100%; /* Opcional: botão largura total no mobile fica bom as vezes */
+    max-width: 300px;
+    justify-content: center;
+  }
+}

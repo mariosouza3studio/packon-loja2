@@ -1,0 +1,333 @@
+.header {
+  position: fixed;
+  top: 3rem;
+  left: 50%;
+  /* O translate(-50%) é gerenciado pelo GSAP no código, mas pode por aqui por segurança */
+  width: 90%;
+  max-width: 1480px;
+  
+  /* Comportamento de Coluna: Navbar em cima, Carrinho embaixo */
+  display: flex;
+  flex-direction: column; 
+  align-items: center; /* Centraliza o conteudo interno se precisar */
+  justify-content: flex-start; /* Começa do topo */
+  
+  /* Altura inicial fixa (apenas a barra) */
+  height: 80px; 
+  
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 50px;
+  
+  /* Padding lateral */
+  padding: 0 clamp(1.5rem, 4vw, 4rem);
+  
+  z-index: 100;
+  color: white;
+  overflow: visible; /* Importante para a animação */
+
+  opacity: 0; 
+  visibility: hidden;
+  will-change: height, background-color;
+}
+
+.navBar {
+  width: 100%;
+  height: 80px; /* Mesma altura inicial do header */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0; /* Impede que essa barra seja esmagada */
+}
+/* Wrapper para alinhar logo e itens no Desktop */
+.logoLink {
+  display: block;
+}
+
+.logoWrapper {
+  position: relative;
+  width: 100px;
+  height: 40px;
+}
+
+/* --- ELEMENTOS EXCLUSIVOS DESKTOP --- */
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: clamp(2rem, 8vw, 8rem);
+}
+
+.desktopActions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* --- ELEMENTOS MOBILE (Inicialmente escondidos) --- */
+.hamburger {
+    display: none; /* Escondido no Desktop */
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 20;
+}
+
+.line {
+    width: 100%;
+    height: 2px;
+    background-color: white;
+    border-radius: 2px;
+    transform-origin: center;
+    /* GSAP controla a animação, mas deixamos transition suave se precisar */
+}
+
+.mobileContent {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  /* Removemos o gap daqui, pois ele será gerenciado pelos wrappers internos */
+  gap: 0; 
+}
+
+/* Este é o novo container que segura a Busca, Botão Carrinho e Links.
+   Ele precisa ter as mesmas regras de layout que o mobileContent tinha antes.
+*/
+.mobileNavWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* O espaçamento original entre os itens */
+  width: 100%;
+}
+
+/* O container do carrinho mobile */
+.mobileCartWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- ESTILIZAÇÃO DO CONTEÚDO MOBILE --- */
+.mobileSearch {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 50px;
+    width: 100%;
+}
+
+.mobileSearch input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    width: 100%;
+    outline: none;
+}
+
+.mobileSearch input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.mobileCartBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    background: transparent;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 300;
+    cursor: pointer;
+    border: 0;
+}
+
+.mobileNav {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+}
+
+.mobileNavLink {
+    padding: 1rem 0;
+    font-size: 1.3rem;
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    transition: color 0.3s;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.mobileNavLink:last-child {
+    border-bottom: none;
+}
+
+.mobileNavLink:hover {
+    color: white;
+}
+
+/* Estilos originais reutilizados */
+.navLink {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.3s;
+  font-weight: 300;
+  white-space: nowrap;
+}
+.navLink:hover { color: #FFDA45; }
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+  font-size: 0.85rem;
+  width: 180px;
+  padding-right: 0.5rem;
+}
+.searchInput::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+.iconButton, .cartButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  transition: transform 0.2s, color 0.2s;
+}
+.iconButton:hover { transform: scale(1.1); }
+.cartButton:hover { color: #a5a5a5; transform: scale(1.05); }
+.cartIcon { color: #fff; }
+
+.cartButton {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #FFDA45;
+  color: black;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container do Carrinho (Invisível por padrão) */
+.cartContainer {
+  width: 100%;
+  /* Inicialmente escondido */
+  display: none; 
+  opacity: 0;
+  
+  /* Não precisa de margin-top pois o header já cresce */
+  padding-top: 1rem; 
+}
+
+/* Opcional: Esconder a Nav Desktop quando o Carrinho expande para limpar o visual */
+.hiddenOnExpanded {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+/* =========================================
+   MEDIA QUERIES (A Mágica acontece aqui)
+   ========================================= */
+
+@media (max-width: 1024px) {
+    .header {
+        /* No mobile, mudamos para coluna para permitir a expansão para baixo */
+        flex-direction: column;
+        align-items: flex-start; /* Alinha tudo à esquerda dentro do container */
+        overflow: hidden;
+        /* Ajuste do padding para quando estiver expandido */
+        padding: 0 2rem;
+    }
+
+    .logoWrapper {
+      position: relative;
+      width: 100px;
+      height: 40px;
+}
+
+    .topBar {
+        width: 100%;
+        height: 80px; /* Mantém a altura do header fechado */
+        justify-content: space-between; /* Logo na esq, Hamburguer na dir */
+        flex-shrink: 0; /* Garante que essa barra nunca encolha */
+    }
+
+    /* Esconde os elementos Desktop */
+    .desktopNav, 
+    .desktopActions {
+        display: none;
+    }
+
+    /* Mostra o Hamburger */
+    .hamburger {
+        display: flex;
+    }
+
+    /* Prepara o Mobile Content (display flex, mas opacity 0 controlado pelo GSAP) */
+    .mobileContent {
+  display: none; /* Controlado pelo GSAP (flex/none) */
+  width: 100%;
+  flex-direction: column;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  gap: 0;
+  
+  /* --- LÓGICA DE SCROLL --- */
+  
+  /* 1. Limite de Altura: 
+     100dvh (altura dinâmica da viewport) menos ~100px 
+     (que é o espaço da barra superior do header + margem de segurança) */
+  max-height: calc(100dvh - 110px);
+  
+  /* 2. Ativa o scroll vertical se passar do limite */
+  overflow-y: auto;
+  
+  /* 3. Scroll suave nativo do iOS (Física de mola) */
+  -webkit-overflow-scrolling: touch;
+
+  /* 4. Esconde a barra de rolagem (Estética Clean) */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge antigo */
+}
+
+/* Esconde barra de rolagem no Chrome/Safari/Webkit */
+.mobileContent::-webkit-scrollbar {
+  display: none;
+}
+}

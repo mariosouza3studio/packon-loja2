@@ -1,0 +1,11 @@
+/* src/app/template.module.css */
+.transitionContainer {
+  width: 100%;
+  /* REMOVIDO: min-height: 100vh; -> Isso causava o cálculo errado de altura na animação */
+  
+  /* Garante que nada vaze horizontalmente durante o efeito de scale/blur */
+  overflow-x: clip; 
+  
+  /* Mantém o fundo transparente para usar a cor do body, evitando piscar */
+  background-color: transparent; 
+}

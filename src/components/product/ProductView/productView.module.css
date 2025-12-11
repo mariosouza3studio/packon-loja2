@@ -1,0 +1,401 @@
+.container {
+  padding: 120px 2rem 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  color: white;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.topSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center; 
+  margin-top: 5vh;
+  position: relative;
+}
+
+/* --- COLUNA ESQUERDA: CONTAINER IMAGEM --- */
+.imageContainer {
+  position: relative;
+  width: 100%;
+  max-width: 650px;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Borda mais sutil */
+  border-radius: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 auto;
+  overflow: hidden; 
+  height: fit-content; 
+  background: rgba(255,255,255,0.01); /* Leve fundo */
+}
+
+.mainImageWrapper {
+  position: relative;
+  width: 100%;
+  height: 550px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  cursor: crosshair;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+.mainImage {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+}
+
+.thumbnailsRow {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0;
+  z-index: 10;
+  padding: 2rem;
+}
+
+.thumbBox {
+  width: 70px;
+  height: 70px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: rgba(0,0,0,0.3);
+}
+
+.thumbBox:hover, .thumbActive {
+  border-color: #FFDA45;
+  transform: translateY(-3px);
+}
+
+.thumbImg {
+  object-fit: contain;
+  padding: 8px;
+}
+
+/* --- COLUNA DIREITA: INFOS (STICKY) --- */
+.infoContainer {
+  display: flex;
+  flex-direction: column;
+  /* MUDANÇA 2: 'flex-start' força o conteúdo a começar de cima.
+     Assim, quando o frete carregar lá embaixo, ele só empurra o footer da página,
+     sem mexer em quem está em cima (Título, Preço, Botão). */
+  justify-content: flex-start; 
+  
+  padding-left: 1rem;
+  position: sticky;
+  top: 130px; /* Mantém o sticky funcionando */
+  height: fit-content;
+}
+
+.title {
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+  line-height: 1.1;
+}
+
+.priceWrapper {
+  margin-bottom: 2.5rem;
+}
+
+.priceValue {
+  font-size: clamp(1.5rem, 2vw, 2.2rem);
+  font-weight: 300;
+  color: #FFDA45;
+}
+
+/* --- CONTROLES --- */
+.controlsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.controlLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pillsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.pillBtn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 50px;
+}
+
+.pillBtn:hover {
+  border-color: #FFDA45;
+  background: rgba(255, 218, 69, 0.05);
+}
+
+.pillBtnActive {
+  background: #FFDA45;
+  color: black;
+  border-color: #FFDA45;
+  font-weight: 600;
+}
+
+.pillBtnUnavailable {
+  opacity: 0.3;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  border-color: transparent;
+  background: rgba(255,255,255,0.05);
+}
+
+/* Quantidade */
+.qtyPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  width: 140px;
+  height: 44px;
+}
+
+.qtyPill button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 45px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+.qtyPill button:hover { color: #FFDA45; }
+
+/* --- BOTÃO ADD --- */
+.addToCartBtn {
+  width: 100%;
+  height: 60px;
+  background: #FFDA45;
+  color: black;
+  border: none;
+  max-width: 400px;
+  border-radius: 99px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.addToCartBtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(255, 218, 69, 0.25);
+}
+
+.addToCartBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+  background: #555;
+  color: #999;
+}
+
+.btnSuccess {
+  background-color: #27ae60;
+  color: white;
+}
+
+/* --- FRETE (ESTILOS NOVOS) --- */
+.shippingSection {
+  margin-top: 2rem;
+  width: 100%;
+  padding: 1.5rem;
+    max-width: 400px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+}
+
+.shippingHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.sectionLabel {
+  font-size: 0.95rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.shippingForm {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.shippingInput {
+  flex: 1;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50px;
+  padding: 0 1rem;
+  height: 46px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.shippingInput:focus { border-color: #fff; }
+
+.shippingBtn {
+  width: 46px;
+  height: 46px;
+  background: #FFDA45;
+  color: black;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+.shippingBtn:hover { opacity: 0.9; }
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Lista de Resultados */
+.shippingError {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.shippingResultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.shippingOption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.shippingOption:last-child { border-bottom: none; }
+
+.shippingInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.shippingName {
+  font-size: 0.95rem;
+  color: white;
+  font-weight: 500;
+}
+
+.shippingDays {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.shippingPrice {
+  font-size: 1rem;
+  color: #FFDA45;
+  font-weight: 600;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- SESSÃO ESPECIFICAÇÕES --- */
+.specsContainer {
+  margin-top: 6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 4rem;
+}
+
+.specsTitle {
+  font-size: 2rem;
+  font-weight: 300;
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.specsContent {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #ccc;
+  font-weight: 300;
+  max-width: 800px;
+}
+
+/* --- MOBILE --- */
+@media (max-width: 1024px) {
+  .topSection {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .infoContainer {
+    position: relative; 
+    top: 0;
+    padding-left: 0;
+  }
+  
+  .imageContainer {
+    max-width: 100%;
+  }
+
+  .mainImageWrapper {
+    height: 400px; 
+  }
+  
+  .title { font-size: 2.2rem; }
+  .controlsRow { gap: 1.5rem; }
+  
+  .shippingSection { padding: 1rem; }
+}

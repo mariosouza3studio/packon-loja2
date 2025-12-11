@@ -1,0 +1,178 @@
+.popularSection {
+  background-color: #020202;
+  /* Padding vertical responsivo: diminui em telas pequenas, aumenta em grandes */
+  padding: clamp(4rem, 8vh, 10rem) 2rem;
+  position: relative;
+  z-index: 5;
+}
+
+.header {
+  text-align: center;
+  /* Margem dinâmica: afasta menos em laptops para caber mais conteúdo */
+  margin-bottom: clamp(3rem, 5vh, 6rem);
+}
+
+.title {
+  /* Escala o texto entre 2.5rem e 4rem dependendo da largura da tela */
+  font-size: clamp(2rem, 3vw, 3rem);
+  font-weight: 400;
+  color: #fff;
+}
+
+/* GRID */
+.gridContainer {
+  display: grid;
+  /* Mantém 3 colunas, mas o gap agora é flexível */
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1rem, 1.5vw, 2.5rem);
+  
+  width: 90%;
+  /* AUMENTO: Permitimos ir até 1600px em telas Full HD+/4K para não ficar muito estreito */
+  max-width: 1400px; 
+  margin: 0 auto;
+}
+
+.card {
+  width: 100%;
+  position: relative;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 32px;
+  
+  /* Padding interno responsivo */
+  padding: clamp(1.5rem, 2vw, 3rem);
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  
+  /* A MÁGICA: Altura mínima flexível. 
+     Em laptop (768px altura) o card será menor (~450px).
+     Em monitorzão, ele cresce até 600px. */
+  min-height: clamp(450px, 55vh, 600px);
+  
+  will-change: transform, opacity; 
+  transition: border-color 0.3s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.imageContainer {
+  width: 100%;
+  height: clamp(200px, 25vh, 320px); 
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.productImg {
+  max-width: 90%;
+  max-height: 100%;
+  object-fit: contain;
+  /* Filtro sutil para integrar a imagem ao fundo escuro se necessário, ou remover */
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); 
+}
+
+.info {
+  text-align: center;
+  width: 100%;
+  /* Garante que o texto fique separado do botão e da imagem */
+  margin-bottom: 1.5rem; 
+}
+
+.productName {
+  /* Texto que escala suavemente */
+  font-size: clamp(1.5rem, 2vw, 2.2rem);
+  color: #fff;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  
+  /* Previne que nomes longos quebrem o layout */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+  display: inline-block;
+}
+
+.price {
+  font-size: clamp(1.2rem, 1.5vw, 1.8rem);
+  color: #ffea97;
+  font-weight: 200;
+}
+
+.buyButton {
+  width: 100%; /* Botão ocupa a largura disponível do padding */
+  max-width: 280px; /* Trava num tamanho bonito */
+  padding: 1rem 0;
+  border-radius: 99px;
+  background: #ffffff;
+  color: #020202;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 1.1rem;
+  border: 1px solid #fff;
+  font-weight: 500;
+}
+
+.buyButton:hover {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #fff;
+}
+
+/* Responsividade de Colunas (Breakpoints) */
+
+/* Abaixo de 1200px (Laptops menores / Tablets Pro em landscape) vira 2 colunas */
+@media (max-width: 1200px) {
+  .gridContainer {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 800px; /* Centraliza melhor as 2 colunas */
+  }
+}
+
+/* Abaixo de 768px (Mobile / Tablets pequenos em portrait) */
+/* ... código anterior ... */
+
+/* Abaixo de 768px (Mobile / Tablets pequenos em portrait) */
+@media (max-width: 768px) {
+  
+  /* 1. Ajustamos o padding da seção principal para dar mais espaço no mobile */
+  .popularSection {
+    padding: 6rem 1rem; /* Reduzimos a lateral de 2rem para 1rem */
+  }
+
+  /* 2. O Container agora ocupa todo o espaço disponível e centraliza os itens */
+  .gridContainer {
+    grid-template-columns: 1fr;
+    width: 100%;      /* Removemos a restrição de 90% para usar todo o espaço do padding */
+    max-width: 100%;
+    margin: 0;        /* Removemos margens automáticas que podem conflitar */
+    justify-items: center; /* COMANDO CHAVE: Centraliza o card na grade */
+  }
+  
+  /* 3. Definimos um tamanho máximo para o card não estourar em telas muito pequenas */
+  .card {
+    min-height: auto;
+    height: auto;
+    width: 100%;
+    max-width: 340px; /* Garante que o card tenha um tamanho elegante */
+    padding: 2rem;
+    margin: 0 auto;   /* Garante centralização extra */
+  }
+  
+  .imageContainer {
+    height: 250px;
+    flex: none;
+  }
+
+  /* Mantém a regra de exibir apenas 3 itens */
+  .card:nth-child(n+4) {
+    display: none;
+  }
+}

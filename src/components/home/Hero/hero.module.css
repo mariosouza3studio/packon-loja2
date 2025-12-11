@@ -1,0 +1,236 @@
+.heroSection {
+  position: relative;
+  /* Altura total da viewport dinâmica */
+  height: 100dvh; 
+  min-height: 650px;
+  width: 100%;
+  
+  background-color: #020202;
+  color: white;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  /* CENTRALIZAÇÃO VERTICAL PADRÃO (Desktop) */
+  justify-content: center; 
+  
+  overflow: hidden;
+  padding-top: 80px; 
+}
+
+.content {
+  text-align: center;
+  z-index: 10;
+  padding: 0 1rem;
+  position: relative;
+  
+  /* Margens do Desktop (Mantidas) */
+  margin-top: 10vh;
+  margin-bottom: 2vh;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 1.1;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  letter-spacing: -3px;
+
+  background: linear-gradient(180deg, #fff 0%, #ccc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  max-width: 1000px;
+}
+
+.subtitle {
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  color: #b1b1b1;
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 300;
+}
+
+.carouselContainer {
+  width: 100vw;
+  height: 350px; 
+  position: relative;
+  display: flex;
+  justify-content: center;
+  perspective: 1000px;
+  margin: 2vh 0 4vh 0;
+}
+
+.cardsWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  left: 50%; 
+}
+
+.card {
+  width: 280px; 
+  height: 400px; 
+  position: absolute;
+  left: 0;
+  top: 50%;
+  
+  border-radius: 18px;
+  overflow: hidden;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ctaButton {
+  margin-bottom: 5vh;
+  padding: 0.8rem 3rem;
+  border-radius: 999px;
+  border: 1px solid #FFDA45;
+  background: #FFDA45;
+  color: #020202;
+  font-size: clamp(1rem, 1.1vw, 1.1rem);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.ctaButton:hover {
+  background: transparent;
+  color: #FFDA45;
+  border-color: #FFDA45;
+}
+
+/* src/components/home/Hero/hero.module.css */
+
+/* ... (Mantenha todo o código anterior exatamente igual) ... */
+
+/* --- NOVO EFEITO DE GLOW --- */
+.carouselGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* Tamanho da luz */
+  width: 60%;
+  height: 80%;
+  max-width: 800px;
+  
+  /* O gradiente amarelo suave (ajustado para o tom da sua logo) */
+  background: radial-gradient(
+    ellipse at center, 
+    rgba(255, 204, 0, 0.25) 0%, /* Amarelo dourado com 25% de opacidade no centro */
+    rgba(255, 204, 0, 0.05) 50%, /* Fade suave */
+    rgba(0, 0, 0, 0) 70% /* Transparente nas bordas */
+  );
+  
+  /* O desfoque alto cria o efeito de "luz ambiente" moderna */
+  filter: blur(60px);
+  
+  /* Garante que fique atrás dos cards (que tem z-index alto pelo JS) */
+  z-index: 0; 
+  pointer-events: none; /* Garante que não atrapalhe cliques */
+}
+
+/* Ajuste sutil para mobile para a luz não ficar muito forte em tela pequena */
+@media (max-width: 768px) {
+  .carouselGlow {
+    width: 90%;
+    height: 60%;
+    opacity: 0.8;
+    filter: blur(40px);
+  }
+}
+
+/* --- RESPONSIVIDADE DE ALTURA (MANTIDA) --- */
+@media (max-height: 800px) {
+  .heroSection {
+    padding-top: 60px;
+  }
+  .carouselContainer {
+    height: 300px;
+    transform: scale(0.85);
+    margin: 0;
+  }
+  .title {
+    margin-bottom: 0.5rem;
+  }
+  .content {
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+  }
+  .ctaButton {
+    margin-bottom: 3vh;
+  }
+}
+
+@media (max-height: 600px) {
+
+  .heroSection {
+    height: auto; 
+    min-height: 100vh;
+    padding-bottom: 2rem;
+  }
+}
+
+/* --- MOBILE SPECIFIC (ABAIXO DE 768px) --- */
+@media (max-width: 768px) {
+  .heroSection {
+    /* 1. Voltamos para o centro */
+    justify-content: center; 
+    
+    /* 2. Padding de segurança apenas para passar do Header (80px) */
+    padding-top: 8rem;
+    padding-bottom: 2rem; /* Respiro embaixo */
+  }
+
+  .content {
+    /* 3. Resetamos as margens do desktop para o flexbox centralizar puro */
+    margin-top: 0; 
+    margin-bottom: 0.5rem;
+  }
+
+  .title {
+    font-size: 2.5rem; 
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .carouselContainer {
+    /* Altura reduzida para mobile */
+    height: 280px; 
+    /* Margem simétrica para separar título e botão */
+    margin: 1rem 0;
+    transform: none; 
+  }
+
+  .card {
+    /* 180px para bater com o JS */
+    width: 180px;
+    height: 260px; 
+    border-radius: 12px;
+  }
+
+  .ctaButton {
+    /* Remove margens de empurrar para baixo, deixa o flex centralizar */
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0.8rem 2rem;
+  }
+}
