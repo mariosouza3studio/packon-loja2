@@ -22,7 +22,7 @@
 /* --- SIDEBAR (FILTROS) --- */
 .sidebar {
   position: sticky;
-  top: 120px;
+  top: 150px;
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
@@ -228,6 +228,49 @@
   padding: 4rem;
   color: #888;
   font-size: 1.2rem;
+}
+
+
+/* ... código anterior ... */
+
+/* --- BOTÃO VER MAIS --- */
+.loadMoreContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 4rem; /* Afastamento do grid */
+  grid-column: 1 / -1; /* Garante que ocupe a largura total se estiver dentro do grid, mas aqui está fora */
+}
+
+.loadMoreButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 1rem 3rem;
+  border-radius: 99px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.loadMoreButton:hover {
+  background: #FFDA45;
+  border-color: #FFDA45;
+  color: #020202;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255, 218, 69, 0.15);
+}
+
+.loadMoreText {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 300;
 }
 
 /* =========================================

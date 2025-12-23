@@ -113,55 +113,27 @@
   border-color: #FFDA45;
 }
 
-/* src/components/home/Hero/hero.module.css */
 
-/* ... (Mantenha todo o código anterior exatamente igual) ... */
-
-/* --- NOVO EFEITO DE GLOW --- */
-.carouselGlow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  
-  /* Tamanho da luz */
-  width: 60%;
-  height: 80%;
-  max-width: 800px;
-  
-  /* O gradiente amarelo suave (ajustado para o tom da sua logo) */
-  background: radial-gradient(
-    ellipse at center, 
-    rgba(255, 204, 0, 0.25) 0%, /* Amarelo dourado com 25% de opacidade no centro */
-    rgba(255, 204, 0, 0.05) 50%, /* Fade suave */
-    rgba(0, 0, 0, 0) 70% /* Transparente nas bordas */
-  );
-  
-  /* O desfoque alto cria o efeito de "luz ambiente" moderna */
-  filter: blur(60px);
-  
-  /* Garante que fique atrás dos cards (que tem z-index alto pelo JS) */
-  z-index: 0; 
-  pointer-events: none; /* Garante que não atrapalhe cliques */
+@media (max-height: 900px) {
+  .title {
+  font-size: clamp(3rem, 4vw, 4rem);
 }
 
-/* Ajuste sutil para mobile para a luz não ficar muito forte em tela pequena */
-@media (max-width: 768px) {
-  .carouselGlow {
-    width: 90%;
-    height: 60%;
-    opacity: 0.8;
-    filter: blur(40px);
-  }
+.carouselContainer {
+  height: 350px; 
 }
 
+.card {
+  width: 280px; 
+  height: 350px; 
+}
+}
 /* --- RESPONSIVIDADE DE ALTURA (MANTIDA) --- */
 @media (max-height: 800px) {
   .heroSection {
     padding-top: 60px;
   }
   .carouselContainer {
-    height: 300px;
     transform: scale(0.85);
     margin: 0;
   }
@@ -184,6 +156,8 @@
     min-height: 100vh;
     padding-bottom: 2rem;
   }
+
+
 }
 
 /* --- MOBILE SPECIFIC (ABAIXO DE 768px) --- */

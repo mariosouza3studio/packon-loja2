@@ -227,6 +227,7 @@ export async function addToCart(cartId: string, lines: { merchandiseId: string; 
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
         id
+        checkoutUrl  # <--- ADICIONADO AQUI
         lines(first: 100) {
           edges {
             node {
@@ -240,7 +241,6 @@ export async function addToCart(cartId: string, lines: { merchandiseId: string; 
                     amount
                     currencyCode
                   }
-                  # ADICIONADO AQUI:
                   selectedOptions {
                     name
                     value
@@ -349,6 +349,7 @@ export async function removeLinesFromCart(cartId: string, lineIds: string[]) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart {
         id
+        checkoutUrl # <--- ADICIONADO AQUI
         lines(first: 100) {
           edges {
             node {
@@ -362,7 +363,6 @@ export async function removeLinesFromCart(cartId: string, lineIds: string[]) {
                     amount
                     currencyCode
                   }
-                  # ADICIONADO AQUI:
                   selectedOptions {
                     name
                     value
@@ -411,6 +411,7 @@ export async function updateLinesInCart(cartId: string, lines: { id: string; qua
     cartLinesUpdate(cartId: $cartId, lines: $lines) {
       cart {
         id
+        checkoutUrl # <--- ADICIONADO AQUI
         lines(first: 100) {
           edges {
             node {
@@ -424,7 +425,6 @@ export async function updateLinesInCart(cartId: string, lines: { id: string; qua
                     amount
                     currencyCode
                   }
-                  # ADICIONADO AQUI:
                   selectedOptions {
                     name
                     value
@@ -465,10 +465,6 @@ export async function updateLinesInCart(cartId: string, lines: { id: string; qua
   const response = await ShopifyData(query, variables);
   return response.data.cartLinesUpdate.cart;
 }
-
-// src/lib/shopify.ts (Adicione/Atualize esta função)
-
-// ... imports e configs anteriores
 
 export async function getCollectionProducts(collectionHandle: string, sortKey = "CREATED", reverse = false) {
   const query = `

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image"; // IMPORTANTE: Importação do componente otimizado
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import styles from "./hero.module.css";
@@ -157,6 +158,7 @@ export default function Hero() {
 
   return (
     <section className={styles.heroSection} ref={containerRef}>
+      <div className={styles.carouselGlow}></div>
       <div className={styles.content}>
         <h1 className={styles.title} ref={titleRef}>
           A embalagem que vende por você
@@ -175,7 +177,20 @@ export default function Hero() {
               className={styles.card}
               ref={(el) => { if (el) cardsRef.current[index] = el }}
             >
-               <img src={item.img} alt="Embalagem" className={styles.cardImage} />
+                {/* OTIMIZAÇÃO: Usamos o componente Image do Next.js.
+                   - fill: Preenche o container pai (.card) respeitando o object-fit do CSS.
+                   - sizes: Define o tamanho real em cada dispositivo para baixar a imagem certa.
+                   - priority: Carrega imediatamente (sem lazy load) pois está na Hero Section.
+                */}
+                <Image 
+                  src={item.img} 
+                  alt="Embalagem" 
+                  fill
+                  sizes="(max-width: 768px) 180px, 280px"
+                  className={styles.cardImage} 
+                  priority
+                  quality={85}
+                />
             </div>
           ))}
         </div>

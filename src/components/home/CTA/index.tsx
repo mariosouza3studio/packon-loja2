@@ -17,8 +17,7 @@ export default function CTA() {
       <ScrollReveal className={styles.container} stagger={0.2}>
         
         <h2 className={styles.title}>
-          Vamos criar algo incrível<br />
-          juntos?
+          A embalagem ideal começa com uma boa conversa.
         </h2>
         
         <button className={styles.button}>

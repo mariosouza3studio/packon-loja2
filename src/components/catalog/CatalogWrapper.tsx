@@ -9,16 +9,17 @@ import { formatPrice } from "@/utils/format";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import CustomSelect from "./CustomSelect";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Plus } from "lucide-react"; // Adicionei o Plus para o botão
 
 interface CatalogWrapperProps {
   initialProducts: any[];
 }
 
+const ITEMS_PER_PAGE = 20; // Constante para fácil manutenção
+
 export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLElement>(null);
-  // Ref para controlar o debounce do preço sem causar re-renders
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- ESTADOS ---
@@ -27,7 +28,11 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
   const [sortOption, setSortOption] = useState<string>("recent");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
+  // Estado dos produtos filtrados (Total disponível após filtros)
   const [filteredProducts, setFilteredProducts] = useState(initialProducts);
+
+  // NOVO: Estado para controlar quantos produtos aparecem na tela
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   // --- 1. Extração Dinâmica de Tipos ---
   const availableTypes = useMemo(() => {
@@ -50,7 +55,6 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
     return Math.ceil(max) || 100;
   }, [initialProducts]);
   
-  // Seta o preço máximo apenas na montagem inicial para não travar o slider
   useEffect(() => { 
     if (maxPrice === 1000 && limitPrice !== 1000) {
         setMaxPrice(limitPrice); 
@@ -59,7 +63,7 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
 
   const progressPercent = limitPrice > 0 ? (maxPrice / limitPrice) * 100 : 0;
 
-  // --- LÓGICA DE FILTRAGEM (CENTRALIZADA) ---
+  // --- LÓGICA DE FILTRAGEM ---
   const filterProducts = useCallback(() => {
     let result = initialProducts.filter(({ node }) => {
       const price = parseFloat(node.priceRange.minVariantPrice.amount);
@@ -90,24 +94,24 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
         duration: 0.2,
         ease: "power2.in",
         onComplete: () => {
-          setFilteredProducts([...result]); // Atualiza o estado
-          // A animação de entrada roda automaticamente pelo useGSAP abaixo
+          setFilteredProducts([...result]);
+          // IMPORTANTE: Resetar paginação ao filtrar
+          setVisibleCount(ITEMS_PER_PAGE);
         }
       });
     } else {
       setFilteredProducts([...result]);
+      setVisibleCount(ITEMS_PER_PAGE);
     }
   }, [initialProducts, maxPrice, selectedType, sortOption]);
 
-  // --- EFEITO REATIVO (AUTOMÁTICO) ---
+  // --- EFEITO REATIVO ---
   useEffect(() => {
-    // Se houver um timeout pendente (usuário ainda arrastando slider), cancela
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-    // Pequeno delay (debounce) para não animar excessivamente enquanto arrasta o preço
     timeoutRef.current = setTimeout(() => {
         filterProducts();
-    }, 300); // 300ms de espera
+    }, 300);
 
     return () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -115,9 +119,18 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
   }, [selectedType, maxPrice, sortOption, filterProducts]);
 
 
-  // --- ANIMAÇÃO DE ENTRADA (Sempre que filteredProducts mudar) ---
+  // --- CALCULA PRODUTOS VISÍVEIS ---
+  // Apenas cortamos o array filtrado com base no contador
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount);
+  }, [filteredProducts, visibleCount]);
+
+
+  // --- ANIMAÇÃO DE ENTRADA ---
+  // Atualizada para observar visibleProducts em vez de filteredProducts
   useGSAP(() => {
     // Garante que os elementos estejam invisíveis antes de animar entrada
+    // O gsap.set garante que apenas os NOVOS ou re-renderizados peguem o estado inicial
     gsap.set(`.${styles.card}`, { opacity: 0, y: 30 });
 
     gsap.to(`.${styles.card}`, 
@@ -130,9 +143,14 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
         clearProps: "all" 
       }
     );
-  }, { scope: containerRef, dependencies: [filteredProducts] });
+  }, { scope: containerRef, dependencies: [visibleProducts] }); // Dependência alterada aqui
 
-  // --- ANIMAÇÃO DO MENU MOBILE ---
+  // --- FUNÇÃO VER MAIS ---
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
+  };
+
+  // Animação Mobile (Mantida igual)
   useGSAP(() => {
     if (window.innerWidth <= 1024 && filterRef.current) {
       if (showMobileFilters) {
@@ -166,7 +184,7 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
   return (
     <div className={styles.contentWrapper} ref={containerRef}>
       
-      {/* --- BOTÃO MOBILE PARA ABRIR FILTROS --- */}
+      {/* ... (Mobile Header Mantido) ... */}
       <div className={styles.mobileFilterHeader}>
         <button 
           className={styles.mobileFilterBtn} 
@@ -177,9 +195,8 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
         </button>
       </div>
 
-      {/* --- SIDEBAR (FILTROS) --- */}
+      {/* ... (Sidebar Mantida igual) ... */}
       <aside className={styles.sidebar} ref={filterRef}>
-        
         <div className={styles.filterGroup}>
           <label className={styles.filterTitle}>Ordenar por:</label>
           <CustomSelect 
@@ -225,52 +242,68 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
              />
           </div>
         </div>
-
-        {/* REMOVIDO O BOTÃO "APLICAR FILTROS" DAQUI */}
-
       </aside>
 
-      {/* --- GRID DE PRODUTOS --- */}
-      <div className={styles.productsGrid}>
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map(({ node }: any) => {
-             const image = node.images.edges[0]?.node;
-             const price = node.priceRange.minVariantPrice;
+      {/* --- CONTEÚDO PRINCIPAL --- */}
+      <div className={styles.mainContent}> {/* Wrapper novo (opcional) ou div direta */}
+          
+          {/* GRID DE PRODUTOS */}
+          <div className={styles.productsGrid}>
+            {visibleProducts.length > 0 ? (
+              visibleProducts.map(({ node }: any) => {
+                 const image = node.images.edges[0]?.node;
+                 const price = node.priceRange.minVariantPrice;
 
-             return (
-               <Link href={`/produtos/${node.handle}`} key={node.id} className={styles.card}>
-                 
-                 <div className={styles.imageWrapper}>
-                   {image ? (
-                     <Image 
-                       src={image.url} 
-                       alt={image.altText || node.title}
-                       fill
-                       sizes="(max-width: 768px) 50vw, 33vw"
-                       className={styles.productImage}
-                     />
-                   ) : (
-                     <div style={{width:'100%', height:'100%', background:'#111', borderRadius: '20px'}}></div>
-                   )}
-                 </div>
-                 
-                 <div className={styles.info}>
-                    <h3 className={styles.productTitle}>{node.title}</h3>
-                    <p className={styles.productPrice}>
-                      {formatPrice(price.amount, price.currencyCode)}
-                    </p>
-                    <button className={styles.buyButton}>
-                      Ver detalhes
-                    </button>
-                 </div>
-               </Link>
-             )
-          })
-        ) : (
-          <div className={styles.noResults}>
-            <p>Nenhum produto encontrado com esses filtros.</p>
+                 return (
+                   <Link href={`/produtos/${node.handle}`} key={node.id} className={styles.card}>
+                     
+                     <div className={styles.imageWrapper}>
+                       {image ? (
+                         <Image 
+                           src={image.url} 
+                           alt={image.altText || node.title}
+                           fill
+                           sizes="(max-width: 768px) 50vw, 33vw"
+                           className={styles.productImage}
+                         />
+                       ) : (
+                         <div style={{width:'100%', height:'100%', background:'#111', borderRadius: '20px'}}></div>
+                       )}
+                     </div>
+                     
+                     <div className={styles.info}>
+                        <h3 className={styles.productTitle}>{node.title}</h3>
+                        <p className={styles.productPrice}>
+                          {formatPrice(price.amount, price.currencyCode)}
+                        </p>
+                        <button className={styles.buyButton}>
+                          Ver detalhes
+                        </button>
+                     </div>
+                   </Link>
+                 )
+              })
+            ) : (
+              <div className={styles.noResults}>
+                <p>Nenhum produto encontrado com esses filtros.</p>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* --- BOTÃO VER MAIS --- */}
+          {/* Só renderiza se tiver mais produtos para mostrar */}
+          {visibleCount < filteredProducts.length && (
+            <div className={styles.loadMoreContainer}>
+              <button onClick={handleLoadMore} className={styles.loadMoreButton}>
+                 <Plus size={20} />
+                 Ver mais produtos
+              </button>
+              <p className={styles.loadMoreText}>
+                  Exibindo {visibleProducts.length} de {filteredProducts.length} produtos
+              </p>
+            </div>
+          )}
+          
       </div>
 
     </div>
