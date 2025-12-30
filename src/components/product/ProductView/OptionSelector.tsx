@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useMemo } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import styles from "./productView.module.css";
@@ -48,7 +48,7 @@ export default function OptionSelector({
     });
   }, [options]);
 
-  // Animação de Abertura/Fechamento (MANTIDA IGUAL)
+  // Animação de Abertura/Fechamento
   useGSAP(() => {
     if (!listRef.current || !iconRef.current) return;
 
@@ -61,7 +61,7 @@ export default function OptionSelector({
       });
       gsap.to(iconRef.current, { rotation: 180, duration: 0.3 });
       
-      // Adicionado classe para z-index management no pai (opcional, via JS class manipulation se precisar)
+      // Ajuste de z-index para garantir que fique por cima
       if(containerRef.current) containerRef.current.style.zIndex = "50";
 
     } else {
@@ -106,6 +106,13 @@ export default function OptionSelector({
             const isValid = isOptionValid(label, value);
             const isSelected = selected === value;
 
+            // --- LÓGICA DE FILTRO ---
+            // Se a opção NÃO for válida e NÃO for a selecionada, ela desaparece.
+            // Retornamos null para não renderizar nada no DOM.
+            if (!isValid && !isSelected) {
+                return null;
+            }
+
             return (
               <button
                 key={value}
@@ -113,17 +120,12 @@ export default function OptionSelector({
                   onChange(value);
                   setIsOpen(false);
                 }}
-                disabled={!isValid && !isSelected}
                 className={`
                   ${styles.optionItem} 
                   ${isSelected ? styles.optionSelected : ''}
-                  ${!isValid ? styles.optionUnavailable : ''}
                 `}
-                title={!isValid ? "Indisponível nesta combinação" : ""}
               >
                 {value}
-                {/* Removi o ícone de Check para limpar o visual e focar no texto centralizado, 
-                    já que a cor amarela indica seleção */}
               </button>
             );
           })}

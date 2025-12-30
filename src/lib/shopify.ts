@@ -121,7 +121,8 @@ export async function getAllCollections() {
 // src/lib/shopify.ts
 
 export async function getProduct(handle: string) {
-  const query = `
+  // 1. Busca os dados principais do produto (sem as variantes completas ainda)
+  const mainQuery = `
   {
     productByHandle(handle: "${handle}") {
       id
@@ -131,7 +132,6 @@ export async function getProduct(handle: string) {
       descriptionHtml
       availableForSale
       
-      # Opções como "Cor", "Tamanho", "Espessura"
       options {
         name
         values
@@ -148,7 +148,7 @@ export async function getProduct(handle: string) {
         }
       }
 
-      images(first: 10) {
+      images(first: 20) {
         edges {
           node {
             url
@@ -156,34 +156,26 @@ export async function getProduct(handle: string) {
           }
         }
       }
-
-      variants(first: 20) {
-        edges {
-          node {
-            id
-            title
-            availableForSale
-            price {
-              amount
-              currencyCode
-            }
-            # Mapeamento das opções para esta variante
-            selectedOptions {
-              name
-              value
-            }
-            image {
-              url
-            }
-          }
-        }
-      }
     }
   }
   `;
 
-  const response = await ShopifyData(query);
-  return response.data.productByHandle ? response.data.productByHandle : null;
+  const mainResponse = await ShopifyData(mainQuery);
+  const product = mainResponse.data.productByHandle;
+
+  if (!product) return null;
+
+  // 2. Busca TODAS as variantes recursivamente para driblar o limite da API
+  // Isso é crucial para produtos com muitas combinações (como o seu)
+  const allVariants = await getAllVariants(handle);
+
+  // 3. Injeta as variantes completas no objeto do produto
+  return {
+    ...product,
+    variants: {
+      edges: allVariants
+    }
+  };
 }
 
 // ... (seu código anterior continua igual)
@@ -566,3 +558,49 @@ export async function searchProducts(term: string) {
   }
 }
 
+
+
+async function getAllVariants(handle: string, cursor: string | null = null, accumulatedVariants: any[] = []): Promise<any[]> {
+  const query = `
+  query getProductVariants($handle: String!, $cursor: String) {
+    productByHandle(handle: $handle) {
+      variants(first: 250, after: $cursor) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            title
+            availableForSale
+            price {
+              amount
+              currencyCode
+            }
+            selectedOptions {
+              name
+              value
+            }
+            image {
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+  `;
+
+  const response = await ShopifyData(query, { handle, cursor });
+  const data = response.data.productByHandle.variants;
+  
+  const newVariants = [...accumulatedVariants, ...data.edges];
+
+  if (data.pageInfo.hasNextPage) {
+    // Se tiver mais páginas, chama a função de novo (recursividade)
+    return getAllVariants(handle, data.pageInfo.endCursor, newVariants);
+  }
+
+  return newVariants;
+}
