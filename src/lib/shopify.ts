@@ -56,7 +56,6 @@ export async function getProductsInCollection(handle: string) {
                 currencyCode
               }
             }
-            # IMAGENS: Trazemos a URL para substituir no componente
             images(first: 1) {
               edges {
                 node {
@@ -65,15 +64,21 @@ export async function getProductsInCollection(handle: string) {
                 }
               }
             }
-            # VARIANTES: Necessário para o botão "Comprar"
+            # --- CORREÇÃO AQUI ---
+            # Adicionamos o campo 'price' para sabermos o valor exato da 1ª opção
             variants(first: 1) {
               edges {
                 node {
                   id
                   availableForSale
+                  price {
+                    amount
+                    currencyCode
+                  }
                 }
               }
             }
+            # ---------------------
           }
         }
       }
@@ -82,10 +87,7 @@ export async function getProductsInCollection(handle: string) {
 
   try {
     const response = await ShopifyData(query);
-    // Verificação de segurança
-    if (!response.data.collectionByHandle) {
-        return [];
-    }
+    if (!response.data.collectionByHandle) return [];
     return response.data.collectionByHandle.products.edges;
   } catch (e) {
     console.log("Erro na busca da coleção:", e);
@@ -493,18 +495,24 @@ export async function getCollectionProducts(collectionHandle: string, sortKey = 
                 }
               }
             }
+            # --- CORREÇÃO AQUI TAMBÉM ---
             variants(first: 1) {
               edges {
                 node {
                   id
                   availableForSale
+                  price {
+                    amount
+                    currencyCode
+                  }
                   selectedOptions {
-                     name
-                     value
+                      name
+                      value
                   }
                 }
               }
             }
+            # ----------------------------
           }
         }
       }

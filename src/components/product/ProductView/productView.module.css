@@ -18,70 +18,79 @@
 
 /* --- COLUNA ESQUERDA: CONTAINER IMAGEM --- */
 .imageContainer {
-  position: relative;
+  position: relative; /* Necessário para posicionar os filhos absolutos */
   width: 100%;
   max-width: 650px;
-  border: 1px solid rgba(255, 255, 255, 0.15); /* Borda mais sutil */
+  
+  /* Altura fixa ou baseada em proporção para garantir o visual imersivo */
+  height: 650px; 
+  max-height: 80vh; /* Não deixa estourar a tela em laptops */
+  
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: block; /* Mudamos de flex para block para o absolute funcionar bem */
   margin: 0 auto;
   overflow: hidden; 
-  height: fit-content; 
-  background: rgba(255,255,255,0.01); /* Leve fundo */
+  background: rgba(255,255,255,0.01);
 }
 
 .mainImageWrapper {
   position: relative;
   width: 100%;
-  height: 550px; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
+  height: 100%; /* Ocupa tudo agora */
+  display: block;
   cursor: crosshair;
-  overflow: hidden;
-  padding: 2rem;
+  padding: 0; /* Removemos o padding para a imagem encostar nas bordas se quiser */
 }
 
 .mainImage {
-  object-fit: contain;
+  object-fit: cover; /* Ou 'contain' se não quiser cortar nada do produto */
   width: 100%;
   height: 100%;
   transition: transform 0.1s ease-out;
   will-change: transform;
 }
 
+/* --- THUMBS (MODIFICADO PARA OVERLAY) --- */
 .thumbnailsRow {
+  position: absolute; /* O segredo: tira do fluxo e joga por cima */
+  bottom: 20px; /* Distância do fundo */
+  left: 50%;
+  transform: translateX(-50%); /* Centraliza perfeitamente */
+  
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-top: 0;
-  z-index: 10;
-  padding: 2rem;
+  gap: 0.8rem;
+  z-index: 20;
+  
+  padding: 0.6rem 1rem;
+  background: rgba(20, 20, 20, 0.6); /* Fundo escuro transparente */
+  backdrop-filter: blur(12px); /* Efeito de vidro */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  width: fit-content; /* Largura se adapta ao conteúdo */
 }
 
 .thumbBox {
-  width: 70px;
-  height: 70px;
+  width: 50px; /* Reduzi um pouco para ficar elegante no overlay */
+  height: 50px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
+  border-radius: 12px;
   position: relative;
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s ease;
-  background: rgba(0,0,0,0.3);
+  background: rgba(255,255,255,0.05); /* Fundo sutil */
 }
 
 .thumbBox:hover, .thumbActive {
   border-color: #FFDA45;
-  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1); /* Efeito de zoom leve */
 }
 
 .thumbImg {
   object-fit: contain;
-  padding: 8px;
 }
 
 /* --- COLUNA DIREITA: INFOS (STICKY) --- */
@@ -178,32 +187,6 @@
   background: rgba(255,255,255,0.05);
 }
 
-/* Quantidade */
-.qtyPill {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 12px;
-  width: 140px;
-  height: 44px;
-}
-
-.qtyPill button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  width: 45px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-.qtyPill button:hover { color: #FFDA45; }
-
 /* --- BOTÃO ADD --- */
 .addToCartBtn {
   width: 100%;
@@ -286,12 +269,12 @@
 .shippingInput:focus { border-color: #fff; }
 
 .shippingBtn {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   background: #FFDA45;
   color: black;
   border: none;
-  border-radius: 20px;
+  border-radius: 40px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -373,6 +356,191 @@
   max-width: 800px;
 }
 
+
+.controlsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.8rem; /* Gap um pouco mais justo para conectar os elementos */
+  margin-bottom: 2.5rem;
+  width: 80%;
+}
+
+.selectorContainer {
+  /* Distribuição Harmônica dos Seletores Principais */
+  flex: 1 0 40%; /* Tenta ocupar 50% da linha */
+  min-width: 160px;
+  
+  position: relative;
+  
+  /* TRUQUE DO Z-INDEX: 
+     Quando fecha, espera 0.4s para baixar o z-index (tempo da animação).
+     Assim o menu não "entra" pra trás do botão de baixo antes de sumir. */
+  z-index: 10;
+  transition: z-index 0s linear 0.4s; 
+}
+
+/* Classe auxiliar para jogar o item aberto pra frente de todos */
+.selectorContainerOpen {
+  z-index: 100 !important; /* Força bruta para garantir */
+  transition: z-index 0s linear 0s; /* Sem delay ao abrir */
+}
+
+/* Header do Seletor */
+.selectorHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.8rem 1.2rem;
+  
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  user-select: none;
+  min-height: 64px; /* Altura confortável */
+}
+
+.selectorHeader:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.selectorHeaderActive {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.selectorLabelInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.selectorLabelTitle {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.selectorCurrentValue {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+  
+}
+
+/* Wrapper da Lista */
+.selectorListWrapper {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  
+  background: rgba(15, 15, 15, 0.98);
+  border-top: none; /* Remove borda duplicada */
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Sombra forte para destacar quando estiver por cima de outros itens */
+  box-shadow: 0 15px 40px rgba(0,0,0,0.8); 
+  transform-origin: top center;
+}
+
+/* Grid de Opções */
+.selectorGrid {
+  display: grid;
+  /* MÁGICA DA HARMONIA:
+     repeat(auto-fit, ...): Cria tantas colunas quanto couberem.
+     minmax(1fr, 1fr): Força todos os itens a terem a mesma largura e ESTICAREM 
+     para ocupar 100% da linha. Nada de buracos vazios. */
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.optionItem {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #ccc;
+padding: 0.6rem 0.2rem; /* Mais altura para o toque */
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 40px;
+}
+
+.optionItem:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.optionSelected {
+  background: #FFDA45;
+  color: black;
+  border-color: #FFDA45;
+  font-weight: 600;
+}
+
+.optionUnavailable {
+  opacity: 0.3;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  border-color: transparent;
+  background: transparent;
+}
+
+/* ... (Mantenha estilos de Qty, AddToCart, Shipping, Specs) ... */
+
+/* Ajuste específico para o grupo de quantidade para alinhar com os flex items */
+.qtyControlGroup {
+  flex: 0 0 auto; /* Não cresce, ocupa o espaço necessário */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centraliza verticalmente se o vizinho for mais alto */
+  min-width: 140px;
+}
+
+.checkIcon {
+  color: inherit;
+}
+
+/* --- MANTENHA O RESTO (Shipping, Qty, AddBtn) --- */
+/* Certifique-se apenas que .controlsRow ou .infoContainer permitam overflow visible 
+   se não o dropdown pode ser cortado. */
+   
+.infoContainer {
+  /* Adicione isso se o dropdown estiver sendo cortado */
+  overflow: visible !important; 
+}
+
 /* --- MOBILE --- */
 @media (max-width: 1024px) {
   .topSection {
@@ -387,11 +555,20 @@
   }
   
   .imageContainer {
-    max-width: 100%;
+    height: 500px; /* Ajuste de altura para telas menores */
   }
 
-  .mainImageWrapper {
-    height: 400px; 
+  .thumbnailsRow {
+    bottom: 15px;
+    padding: 0.5rem 0.8rem;
+    width: 90%; /* Garante que não vaze se tiver muitas fotos */
+    overflow-x: auto; /* Permite scroll horizontal se tiver muitas */
+    justify-content: flex-start; /* Alinha no começo se tiver scroll */
+  }
+  
+  /* Esconde a barra de rolagem no mobile estético */
+  .thumbnailsRow::-webkit-scrollbar {
+    display: none;
   }
   
   .title { font-size: 2.2rem; }

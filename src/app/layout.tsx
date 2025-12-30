@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SmoothScroll } from "@/components/SmoothScroll";
+import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import CartProvider from "@/components/CartProvider"; // Importe aqui
 import SearchResults from "@/components/layout/SearchResults"; // Importe o novo componente
 

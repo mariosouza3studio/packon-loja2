@@ -251,37 +251,41 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
           <div className={styles.productsGrid}>
             {visibleProducts.length > 0 ? (
               visibleProducts.map(({ node }: any) => {
-                 const image = node.images.edges[0]?.node;
-                 const price = node.priceRange.minVariantPrice;
+                  const image = node.images.edges[0]?.node;
+                  
+                  // LÓGICA DE PREÇO CORRIGIDA:
+                  const firstVariant = node.variants?.edges[0]?.node;
+                  const price = firstVariant?.price || node.priceRange.minVariantPrice;
 
-                 return (
-                   <Link href={`/produtos/${node.handle}`} key={node.id} className={styles.card}>
-                     
-                     <div className={styles.imageWrapper}>
-                       {image ? (
-                         <Image 
-                           src={image.url} 
-                           alt={image.altText || node.title}
-                           fill
-                           sizes="(max-width: 768px) 50vw, 33vw"
-                           className={styles.productImage}
-                         />
-                       ) : (
-                         <div style={{width:'100%', height:'100%', background:'#111', borderRadius: '20px'}}></div>
-                       )}
-                     </div>
-                     
-                     <div className={styles.info}>
-                        <h3 className={styles.productTitle}>{node.title}</h3>
-                        <p className={styles.productPrice}>
-                          {formatPrice(price.amount, price.currencyCode)}
-                        </p>
-                        <button className={styles.buyButton}>
-                          Ver detalhes
-                        </button>
-                     </div>
-                   </Link>
-                 )
+                  return (
+                    <Link href={`/produtos/${node.handle}`} key={node.id} className={styles.card}>
+                      
+                      <div className={styles.imageWrapper}>
+                        {image ? (
+                          <Image 
+                            src={image.url} 
+                            alt={image.altText || node.title}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                            className={styles.productImage}
+                          />
+                        ) : (
+                          <div style={{width:'100%', height:'100%', background:'#111', borderRadius: '20px'}}></div>
+                        )}
+                      </div>
+                      
+                      <div className={styles.info}>
+                         <h3 className={styles.productTitle}>{node.title}</h3>
+                         <p className={styles.productPrice}>
+                           {/* Formatando o preço correto */}
+                           {formatPrice(price.amount, price.currencyCode)}
+                         </p>
+                         <button className={styles.buyButton}>
+                           Ver detalhes
+                         </button>
+                      </div>
+                    </Link>
+                  )
               })
             ) : (
               <div className={styles.noResults}>

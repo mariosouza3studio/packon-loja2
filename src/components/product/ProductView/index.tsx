@@ -1,16 +1,18 @@
+// src/components/product/productView/index.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { ArrowRight, Loader2, Check, ShoppingBag, Truck } from "lucide-react"; 
+import { ArrowRight, Loader2, Check, ShoppingBag } from "lucide-react"; 
 import styles from "./productView.module.css";
 import { formatPrice } from "@/utils/format";
 import { useCartStore } from "@/store/cartStore";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { calculateShipping } from "@/app/actions/shipping"; // <--- Import da Action Nova
+import { calculateShipping } from "@/app/actions/shipping";
+import OptionSelector from "./OptionSelector";
 
 interface ProductViewProps {
   product: any;
@@ -28,7 +30,8 @@ export default function ProductView({ product }: ProductViewProps) {
 
   // --- ESTADOS VISUAIS ---
   const [selectedImage, setSelectedImage] = useState(product.images.edges[0]?.node.url);
-  const [qty, setQty] = useState(100); 
+  
+  // REMOVIDO: const [qty, setQty] = useState(100); 
   
   // Estados de Loading e Feedback do Botão
   const [isAdding, setIsAdding] = useState(false);
@@ -165,7 +168,8 @@ export default function ProductView({ product }: ProductViewProps) {
   const handleAddToCart = async () => {
     if (!currentVariant || !currentVariant.availableForSale || isAdding) return;
     setIsAdding(true);
-    await addItem(currentVariant.id, qty);
+    // MUDANÇA: Adiciona sempre 1 unidade do "pacote/variante" selecionado
+    await addItem(currentVariant.id, 1);
     setIsAdding(false);
     setIsSuccess(true);
     setTimeout(() => {
@@ -174,31 +178,24 @@ export default function ProductView({ product }: ProductViewProps) {
     }, 800);
   };
 
-  // --- LÓGICA DE FRETE (FRENET) ---
+  // --- LÓGICA DE FRETE ---
   const handleCalculateShipping = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Reseta estados
     setShippingError(null);
     setShippingOptions(null);
 
-    // Validações básicas
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length < 8) return;
     if (!currentVariant) return;
     
     setCepLoading(true);
 
-    // Prepara dados para a Server Action
     const price = parseFloat(currentVariant.price.amount);
-    
-    // Tenta pegar o peso se a Shopify fornecer, senão usa 1kg padrão
-    // (Ajuste isso se tiver metafields de peso configurados)
     const weight = 1; 
 
     try {
         const result = await calculateShipping(cleanCep, [{
-            quantity: 1, // Cotação para 1 unidade
+            quantity: 1, 
             price: price,
             weight: weight
         }]);
@@ -206,12 +203,10 @@ export default function ProductView({ product }: ProductViewProps) {
         if (result.error) {
             setShippingError(result.error);
         } else if (result.options && result.options.length > 0) {
-            // Pega apenas os 3 primeiros (mais baratos)
             setShippingOptions(result.options.slice(0, 3));
         } else {
             setShippingError("Nenhuma opção disponível para este CEP.");
         }
-
     } catch (error) {
         setShippingError("Erro ao calcular frete.");
     } finally {
@@ -273,46 +268,24 @@ export default function ProductView({ product }: ProductViewProps) {
                 </span>
             </div>
 
-            {/* --- CONTROLES --- */}
+            {/* --- CONTROLES (SELETORES) --- */}
             <div className={styles.controlsRow}>
+                {/* Como "Quantidade" agora é uma opção na Shopify, 
+                   o loop abaixo vai criar um OptionSelector para ela automaticamente 
+                   (junto com Tamanho, Espessura, Cor, etc.)
+                */}
                 {product.options.map((option: any) => (
                     option.name !== "Title" && (
-                        <div key={option.name} className={styles.controlGroup}>
-                            <span className={styles.controlLabel}>{option.name}</span>
-                            <div className={styles.pillsWrapper}>
-                                {option.values.map((value: string) => {
-                                    const isActive = selectedOptions[option.name] === value;
-                                    const isValid = isOptionValid(option.name, value);
-                                    
-                                    return (
-                                        <button
-                                            key={value}
-                                            className={`
-                                                ${styles.pillBtn} 
-                                                ${isActive ? styles.pillBtnActive : ''}
-                                                ${!isValid ? styles.pillBtnUnavailable : ''}
-                                            `}
-                                            onClick={() => handleOptionChange(option.name, value)}
-                                            title={!isValid ? "Indisponível nesta combinação" : ""}
-                                        >
-                                            {value}
-                                        </button>
-                                    )
-                                })}
-                            </div>
-                        </div>
+                        <OptionSelector 
+                           key={option.name}
+                           label={option.name}
+                           options={option.values}
+                           selected={selectedOptions[option.name] || ""}
+                           onChange={(newValue) => handleOptionChange(option.name, newValue)}
+                           isOptionValid={isOptionValid}
+                        />
                     )
                 ))}
-
-                {/* Seletor de Quantidade */}
-                <div className={styles.controlGroup}>
-                    <span className={styles.controlLabel}>Quantidade</span>
-                    <div className={styles.qtyPill}>
-                        <button onClick={() => setQty(q => Math.max(100, q - 100))}>-</button>
-                        <span>{qty}</span>
-                        <button onClick={() => setQty(q => q + 100)}>+</button> 
-                    </div>
-                </div>
             </div>
 
             {/* --- BOTÃO CARRINHO --- */}
@@ -344,7 +317,7 @@ export default function ProductView({ product }: ProductViewProps) {
                 )}
             </button>
 
-            {/* --- FRETE (ATUALIZADO) --- */}
+            {/* --- FRETE --- */}
             <div className={styles.shippingSection}>
                 <div className={styles.shippingHeader}>
                     <span className={styles.sectionLabel}>Calcular Frete e Prazo</span>
@@ -357,7 +330,6 @@ export default function ProductView({ product }: ProductViewProps) {
                         className={styles.shippingInput}
                         value={cep}
                         onChange={(e) => {
-                            // Máscara de CEP enquanto digita
                             let v = e.target.value.replace(/\D/g, '');
                             if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, '$1-$2');
                             setCep(v);
@@ -369,14 +341,12 @@ export default function ProductView({ product }: ProductViewProps) {
                     </button>
                 </form>
                 
-                {/* ERRO */}
                 {shippingError && (
                     <p className={styles.shippingError}>
                         {shippingError}
                     </p>
                 )}
 
-                {/* RESULTADOS LISTA */}
                 {shippingOptions && (
                    <div className={styles.shippingResultsList}>
                       {shippingOptions.map((opt, idx) => (

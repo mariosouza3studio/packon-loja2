@@ -30,6 +30,8 @@
   gap: clamp(0.5rem, 1vw, 1.5rem);
 }
 
+/* ... código anterior ... */
+
 .panel {
   position: relative;
   height: 100%; 
@@ -37,11 +39,13 @@
   overflow: hidden;
   cursor: pointer;
   
-  /* Padrão desktop */
   flex-grow: 1; 
   
-  transition: border-color 0.3s ease;
+  /* Melhora performance de animação de tamanho */
   will-change: flex-grow, height; 
+  transform: translateZ(0); /* Força GPU */
+  
+  transition: border-color 0.3s ease;
   isolation: isolate; 
 }
 
@@ -51,18 +55,32 @@
   left: 0;
   width: 100%;
   height: 100%;
+  
+  /* Garante que a imagem não "vaze" durante o resize */
+  overflow: hidden; 
+  pointer-events: none; /* Melhora performance de scroll ignorando mouse events na img */
 }
 
 .bgImage {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
+  /* Animação suave */
   transition: transform 1s ease;
+  
+  /* OTIMIZAÇÃO CRÍTICA: */
+  will-change: transform; /* Avisa o browser que vai mudar */
+  backface-visibility: hidden; /* Evita flickering */
+  transform: translateZ(0); /* Aceleração de Hardware */
 }
 
 .panel.active .bgImage {
+  /* Se você estiver aplicando classe .active via JS (no seu código atual não vi, 
+     mas se tiver, ok. A animação de zoom está sendo feita pelo GSAP? 
+     Se não, o CSS handle aqui): */
   transform: scale(1.05);
 }
+
+/* O resto do arquivo permanece igual */
+/* ... */
 
 .overlay {
   position: absolute;

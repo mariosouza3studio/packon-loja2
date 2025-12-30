@@ -4,25 +4,32 @@ import styles from "./cta.module.css";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { ArrowRight } from "lucide-react";
 
+// --- CONFIGURAÇÃO WHATSAPP ---
+const WHATSAPP_NUMBER = "5535999521044"; 
+const WHATSAPP_MSG = encodeURIComponent("Olá! Vim pelo site da Packon e gostaria tirar uma dúvida.");
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
+
 export default function CTA() {
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id="contato">
       <div className={styles.glow}></div>
 
-      {/* CORREÇÃO: 
-        Passamos a classe .container direto para o ScrollReveal.
-        Agora a div que ele gera terá 'display: flex' e 'align-items: center',
-        centralizando o H2 e o Button internamente.
-      */}
       <ScrollReveal className={styles.container} stagger={0.2}>
         
         <h2 className={styles.title}>
           A embalagem ideal começa com uma boa conversa.
         </h2>
         
-        <button className={styles.button}>
+        {/* MUDANÇA AQUI: Link para WhatsApp com estilo de botão */}
+        <a 
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.button}
+            style={{ textDecoration: 'none' }}
+        >
           Faça seu orçamento <ArrowRight size={22} />
-        </button>
+        </a>
 
       </ScrollReveal>
     </section>

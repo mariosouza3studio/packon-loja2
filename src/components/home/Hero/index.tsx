@@ -1,11 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image"; // IMPORTANTE: Importação do componente otimizado
+import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import styles from "./hero.module.css";
 import { ArrowRight } from "lucide-react";
+
+// --- CONFIGURAÇÃO DO WHATSAPP ---
+// Substitua pelo número da Packon (Formato: 55 + DDD + Numero)
+const WHATSAPP_NUMBER = "5535999521044"; 
+const WHATSAPP_MSG = encodeURIComponent("Olá! Vim pelo site da Packon e gostaria de solicitar um orçamento.");
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
 
 const SLIDES = [
   { id: 1, img: "/image4.png" },
@@ -27,12 +33,13 @@ export default function Hero() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const carouselContainerRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  // Tipagem alterada para HTMLAnchorElement pois agora é um link
+  const buttonRef = useRef<HTMLAnchorElement>(null);
 
   useGSAP(() => {
     const mm = gsap.matchMedia();
 
-    // 1. ANIMAÇÃO DE ENTRADA (Igual para todos)
+    // 1. ANIMAÇÃO DE ENTRADA
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
     if (titleRef.current && subtitleRef.current && carouselContainerRef.current && buttonRef.current) {
@@ -64,7 +71,7 @@ export default function Hero() {
         }, "-=0.8");
     }
 
-    // 2. LÓGICA DO CARROSSEL COM MATCHMEDIA
+    // 2. LÓGICA DO CARROSSEL (Mantida igual)
     mm.add({
       isDesktop: "(min-width: 769px)",
       isMobile: "(max-width: 768px)",
@@ -74,16 +81,11 @@ export default function Hero() {
       const cards = cardsRef.current.filter(Boolean);
       if (cards.length === 0) return;
 
-      // --- AJUSTES DE DIMENSÃO ---
-      // Mobile: card menor e com um pequeno gap para não colar
       const cardWidth = isMobile ? 180 : 280; 
       const gap = isMobile ? 20 : 0; 
       const spacing = cardWidth + gap; 
       const totalWidth = cards.length * spacing;
-
-      // Mobile: Velocidade levemente ajustada
       const duration = isMobile ? 200 : 150; 
-
       const proxy = { x: 0 };
       
       gsap.to(proxy, {
@@ -106,16 +108,10 @@ export default function Hero() {
           
           const visualX = x + (window.innerWidth / 2) + (cardWidth / 2);
           const distFromCenter = visualX - centerX;
-          
-          // 'val' normalizado: 0 = centro, 0.5 = metade da tela para direita, etc.
           const val = distFromCenter / window.innerWidth;
 
-          // --- CONFIGURAÇÕES VISUAIS ---
-          
-          // Rotação: Suavizada no mobile para não distorcer tanto
           const rotateY = isMobile ? val * -40 : val * -85; 
           
-          // Profundidade: Mobile precisa ser mais "raso"
           const depthMobile = -50 + (Math.abs(val) * 200);
           const depthDesktop = -250 + (Math.abs(val) * 1000);
           const translateZ = isMobile ? depthMobile : depthDesktop;
@@ -130,17 +126,11 @@ export default function Hero() {
           `;
           card.style.zIndex = zIndex.toString();
 
-          // --- LÓGICA "SOMENTE 3 CARDS" NO MOBILE ---
           if (isMobile) {
-            // Se a distância normalizada for maior que 0.6 (aprox), esconde o card.
-            // Isso garante que vejamos o Centro (0.0) e os vizinhos (aprox 0.4 ou 0.5)
-            // e corte o resto.
             const isVisible = Math.abs(val) < 0.65;
             card.style.opacity = isVisible ? '1' : '0';
-            // Opcional: transition suave para não "piscar" duro, mas no 3D as vezes o corte seco é melhor.
             card.style.transition = 'opacity 0.2s'; 
           } else {
-            // DESKTOP: Sempre visível (Regra Imutável)
             card.style.opacity = '1';
             card.style.transition = 'none';
           }
@@ -169,7 +159,6 @@ export default function Hero() {
       </div>
 
       <div className={styles.carouselContainer} ref={carouselContainerRef}>
-
         <div className={styles.cardsWrapper}> 
           {DATA.map((item, index) => (
             <div 
@@ -177,11 +166,6 @@ export default function Hero() {
               className={styles.card}
               ref={(el) => { if (el) cardsRef.current[index] = el }}
             >
-                {/* OTIMIZAÇÃO: Usamos o componente Image do Next.js.
-                   - fill: Preenche o container pai (.card) respeitando o object-fit do CSS.
-                   - sizes: Define o tamanho real em cada dispositivo para baixar a imagem certa.
-                   - priority: Carrega imediatamente (sem lazy load) pois está na Hero Section.
-                */}
                 <Image 
                   src={item.img} 
                   alt="Embalagem" 
@@ -196,9 +180,17 @@ export default function Hero() {
         </div>
       </div>
 
-      <button className={styles.ctaButton} ref={buttonRef}>
+      {/* MUDANÇA AQUI: Transformado em Link <a> para SEO e Acessibilidade */}
+      <a 
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.ctaButton} 
+        ref={buttonRef}
+        style={{ textDecoration: 'none' }} // Garante que não tenha sublinhado
+      >
         Faça seu orçamento <ArrowRight size={22} />
-      </button>
+      </a>
     </section>
   );
 }

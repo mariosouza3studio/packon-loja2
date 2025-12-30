@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image"; // IMPORTANTE: Usando o componente nativo otimizado
 import styles from "./categories.module.css";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -18,7 +19,8 @@ const CATEGORIES = [
 export default function Categories() {
   const [activeId, setActiveId] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
-
+  
+  // Refs tipadas para performance
   const panelsRef = useRef<(HTMLDivElement | null)[]>([]);
   const textsRef = useRef<(HTMLHeadingElement | null)[]>([]);
 
@@ -38,7 +40,7 @@ export default function Categories() {
         if (panel && text) {
           gsap.set(panel, { 
             flexGrow: isActive ? 4 : 1, 
-            height: "100%" // Reseta altura se vier do mobile
+            height: "100%" 
           });
           gsap.set(text, {
             top: isActive ? "15%" : "50%",
@@ -58,26 +60,25 @@ export default function Categories() {
 
         if (panel && text) {
           gsap.set(panel, { 
-            flexGrow: 0, // Desativa flexGrow
-            height: isActive ? 400 : 80 // Altura em pixels
+            flexGrow: 0, 
+            height: isActive ? 400 : 80 
           });
           gsap.set(text, {
             top: isActive ? "15%" : "50%",
-            rotate: 0, // Texto sempre horizontal no mobile
+            rotate: 0, 
             color: isActive ? "#ffffff" : "#fff"
           });
         }
       });
     });
 
-  }, { scope: containerRef }); // Roda na montagem e resize
+  }, { scope: containerRef });
 
-  // --- CLICK HANDLER (Responsivo) ---
+  // --- CLICK HANDLER (Otimizado) ---
   const handleClick = contextSafe((id: number) => {
     if (id === activeId) return;
     setActiveId(id);
 
-    // Detecta se é mobile no momento do clique
     const isMobile = window.matchMedia("(max-width: 900px)").matches;
 
     CATEGORIES.forEach((cat, idx) => {
@@ -88,9 +89,8 @@ export default function Categories() {
       if (!panel || !text) return;
 
       if (isMobile) {
-        // --- ANIMAÇÃO MOBILE (Altura) ---
         gsap.to(panel, {
-          height: isActive ? 400 : 80, // Expande altura
+          height: isActive ? 400 : 80,
           duration: 0.6,
           ease: "power3.inOut",
           overwrite: "auto"
@@ -98,17 +98,16 @@ export default function Categories() {
 
         gsap.to(text, {
           top: isActive ? "15%" : "50%",
-          rotate: 0, // Sempre reto
+          rotate: 0,
           color: isActive ? "#ffffff" : "rgba(255,255,255,0.7)",
           duration: 0.6,
           overwrite: "auto"
         });
 
       } else {
-        // --- ANIMAÇÃO DESKTOP (FlexGrow) ---
         gsap.to(panel, {
           flexGrow: isActive ? 4 : 1,
-          height: "100%", // Garante altura total
+          height: "100%",
           duration: 0.8,
           ease: "power3.inOut",
           overwrite: "auto"
@@ -141,7 +140,20 @@ export default function Categories() {
             onClick={() => handleClick(cat.id)}
           >
             <div className={styles.imageWrapper}>
-               <img src={cat.img} alt={cat.name} className={styles.bgImage} />
+               {/* OTIMIZAÇÃO AQUI: Next Image 
+                  - fill: Preenche o container pai
+                  - sizes: Crucial para baixar imagens pequenas em telas pequenas
+                  - quality: 80% reduz drasticamente o tamanho sem perder visual
+                  - priority: False (Lazy load padrão)
+               */}
+               <Image 
+                  src={cat.img} 
+                  alt={cat.name} 
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className={styles.bgImage}
+                  quality={80}
+               />
                <div className={styles.overlay}></div>
             </div>
 

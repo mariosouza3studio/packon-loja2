@@ -1,6 +1,7 @@
+/* src/components/layout/Header/cartContent.module.css */
+
 .container {
   width: 100%;
-  /* Padding interno para afastar das bordas do header expandido */
   padding: 1rem 0 2rem 0; 
   display: flex;
   flex-direction: column;
@@ -22,90 +23,102 @@
 }
 
 /* --- A LINHA DO PRODUTO (ROW) --- */
+/* src/components/layout/Header/cartContent.module.css */
+
+/* ... (Mantenha container, emptyState, listContainer iguais) ... */
+
+/* --- A LINHA DO PRODUTO (ROW) --- */
 .row {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Espalha os itens */
-  gap: 1rem;
+  /* Mudança: Removemos o space-between para controlar via flex-grow */
+  justify-content: flex-start; 
+  gap: 1rem; /* Espaçamento base consistente entre todos os itens */
   padding-bottom: 0.5rem;
-  /* Opcional: borda sutil entre itens se quiser, o layout figma parece limpo */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Opcional: Ajuda a guiar o olho */
   transition: opacity 0.3s;
 }
 
-/* 1. Imagem no Circulo Preto */
 .imageCircle {
   width: 60px;
   height: 60px;
-  background-color: #020202; /* Cor solicitada */
+  background-color: #020202; 
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.05);
-  flex-shrink: 0;
+  flex-shrink: 0; /* Garante que a imagem nunca esmague */
 }
 
 .productImg {
   object-fit: contain;
 }
 
-/* Colunas de Texto */
+/* Coluna Nome: Ganha peso 2 para ocupar mais espaço e empurrar o resto */
 .colName {
-  flex: 1; /* Nome ganha um pouco mais de espaço */
+  flex: 2; 
   min-width: 150px;
+  padding-left: 0.5rem; /* Pequeno respiro da imagem */
 }
+
 .productName {
   font-size: 1.1rem;
   font-weight: 300;
   color: #fff;
+  display: block;
 }
 
+/* Coluna Espessura: Centralizada e peso 1 */
 .colInfo {
   flex: 1;
   font-size: 1rem;
   color: #ffffff;
   white-space: nowrap;
+  text-align: center; /* Centraliza para harmonia */
 }
 
-/* Stepper Pill */
+/* Stepper: Largura fixa, apenas centralizamos ele visualmente se sobrar espaço */
 .stepper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  
   background: transparent;
   border: 1px solid rgba(255,255,255,0.3);
   border-radius: 99px;
   padding: 0.3rem 0.8rem;
-  width: 120px;
-  flex-shrink: 0;
+  
+  width: 120px; 
+  flex-shrink: 0; /* Não deixa encolher */
+  
+  cursor: default;
+  user-select: none;
+  /* Removemos margens laterais manuais, o gap do .row cuida disso */
 }
-
-.stepBtn {
-  background: none;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: opacity 0.2s;
-}
-.stepBtn:hover { opacity: 0.7; }
 
 .stepValue {
   font-size: 0.95rem;
   font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
 }
 
+/* Coluna Preço: Centralizada (ou direita) e SEM a margem gigante */
 .colPrice {
   flex: 1;
-  text-align: left;
   font-size: 1.1rem;
   color: #fff;
   font-weight: 300;
-  margin-left: 5rem;
+  white-space: nowrap;
+  
+  /* CRUCIAL: Removemos o margin-left: 5rem que causava o buraco */
+  margin-left: 0; 
+  
+  text-align: center; /* Alinha com o título "Valor" se houver, ou mantém harmonia */
 }
 
+/* Botão Lixeira */
 .trashBtn {
   background: none;
   border: none;
@@ -114,18 +127,22 @@
   opacity: 0.7;
   transition: opacity 0.2s, color 0.2s;
   padding: 0.5rem;
-  
+  flex-shrink: 0; /* Garante tamanho fixo */
+  margin-left: 0.5rem;
 }
+
 .trashBtn:hover {
   opacity: 1;
   color: #ff5555;
 }
 
-/* --- FOOTER (Subtotal + Botão) --- */
+/* ... (Mantenha o footer e media queries iguais) ... */
+
+/* --- FOOTER --- */
 .footer {
   display: flex;
   align-items: center;
-  justify-content: center; /* Centralizado como na imagem */
+  justify-content: center;
   gap: 2rem;
   margin-top: 1rem;
   padding-top: 1rem;
@@ -138,7 +155,7 @@
 }
 
 .checkoutBtn {
-  background-color: #FFDA45; /* Fundo bem escuro */
+  background-color: #FFDA45;
   color: #020202;
   padding: 0.6rem 3rem;
   border-radius: 99px;
@@ -167,7 +184,7 @@
   cursor: pointer;
   margin-bottom: 2rem;
   padding: 0;
-  align-self: flex-start; /* Alinha à esquerda */
+  align-self: flex-start;
   transition: opacity 0.2s;
 }
 
@@ -175,13 +192,11 @@
   opacity: 0.7;
 }
 
-/* Mobile Ajuste: Esconder essa visualização complexa se necessário, 
-   mas como você pediu desktop primeiro, vamos manter o foco lá */
 @media (max-width: 1024px) {
   .row { flex-wrap: wrap; }
   .stepper { width: 100px; }
   .colInfo { display: none; }
   .footer {
-  flex-direction: column;
-} /* Simplifica no mobile se aparecer */
+    flex-direction: column;
+  }
 }

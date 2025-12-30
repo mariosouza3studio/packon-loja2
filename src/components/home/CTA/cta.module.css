@@ -48,9 +48,9 @@
 }
 
 .button:hover {
-  background: white;
-  color: black;
-  border-color: white;
+  background: transparent;
+  color: #FFDA45;
+  border-color: #FFDA45;
 }
 
 /* --- MOBILE AJUSTADO --- */

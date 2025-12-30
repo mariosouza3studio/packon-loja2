@@ -1,0 +1,151 @@
+/* src/components/home/About/about.module.css */
+
+.section {
+  position: relative;
+  width: 100%;
+  /* AJUSTE: Reduzi de 800px para 650px pois tiramos os boxes de baixo */
+  min-height: 650px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 6rem 2rem;
+  color: white;
+}
+
+/* --- FUNDO PARALLAX --- */
+.bgWrapper {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bgImage {
+  position: relative;
+  width: 100%;
+  height: 120%;
+  top: -10%;
+}
+
+.img {
+  object-fit: cover;
+  opacity: 0.6; 
+}
+
+.overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(
+    to bottom, 
+    #020202 0%, 
+    rgba(2,2,2,0.4) 20%, 
+    rgba(2,2,2,0.4) 80%, 
+    #020202 100%
+  );
+  z-index: 1;
+}
+
+/* --- CONTEÚDO --- */
+.contentContainer {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  /* Removemos o gap excessivo pois só tem um item agora */
+  gap: 0; 
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  justify-items: center;
+  align-items: center; /* Centraliza verticalmente texto com título */
+}
+
+/* Título */
+.label {
+  display: block;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #FFDA45;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.title {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.1;
+  color: white;
+}
+
+.highlight {
+  font-weight: 600;
+  color: white;
+}
+
+/* Texto Descritivo */
+.description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+
+  margin-top: 2rem;
+  max-width: 600px;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  color: #FFDA45;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: gap 0.3s ease;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.linkButton:hover {
+  gap: 1.5rem;
+}
+
+/* REMOVIDO: .pillarsRow, .glassCard, .cardNum, .cardLabel */
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 1024px) {
+  .section {
+    min-height: auto;
+    padding: 6rem 2rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .title {
+    max-width: 100%;
+  }
+
+  .description {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* REMOVIDO: Ajustes de pillarsRow mobile */
+  
+  .bgImage {
+    height: 100%;
+    top: 0;
+  }
+}

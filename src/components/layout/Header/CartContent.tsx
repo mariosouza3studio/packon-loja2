@@ -2,18 +2,17 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Plus, Minus, Trash2, ArrowLeft } from "lucide-react"; // Importe ArrowLeft
+import { Trash2, ArrowLeft } from "lucide-react"; // Removidos Plus e Minus
 import styles from "./cartContent.module.css";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/format";
 
-// Nova interface para aceitar a função de voltar
 interface CartContentProps {
   onBack?: () => void;
 }
 
 export default function CartContent({ onBack }: CartContentProps) {
-  const { cart, removeItem, updateQuantity } = useCartStore();
+  const { cart, removeItem } = useCartStore(); // Removido updateQuantity
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   if (!cart) return null;
@@ -27,14 +26,7 @@ export default function CartContent({ onBack }: CartContentProps) {
     setIsUpdating(null);
   };
 
-  const handleUpdateQty = async (lineId: string, currentQty: number, delta: number) => {
-    const step = 100; 
-    const newQty = currentQty + (delta * step);
-    if (newQty < step) return; 
-    setIsUpdating(lineId);
-    await updateQuantity(lineId, newQty);
-    setIsUpdating(null);
-  };
+  // REMOVIDA A FUNÇÃO handleUpdateQty
 
   // --- CABEÇALHO DO MOBILE (Botão Voltar) ---
   const mobileHeader = onBack && (
@@ -58,7 +50,6 @@ export default function CartContent({ onBack }: CartContentProps) {
   return (
     <div className={styles.container}>
       
-      {/* Exibe o botão de voltar se estiver no modo mobile */}
       {mobileHeader}
 
       <div className={styles.listContainer}>
@@ -74,7 +65,7 @@ export default function CartContent({ onBack }: CartContentProps) {
             }
           );
 
-          const label = "Expessura";
+          const label = "Espessura"; // Corrigi o typo "Expessura" para "Espessura"
           const thicknessDisplay = thicknessOption 
             ? `${label}: ${thicknessOption.value}` 
             : `${label}: -`;
@@ -94,35 +85,27 @@ export default function CartContent({ onBack }: CartContentProps) {
                   <div className={styles.placeholderImg} />
                 )}
               </div>
+              
               <div className={styles.colName}>
                 <span className={styles.productName}>{product.title}</span>
               </div>
-              <div className={styles.colInfo}>
-                <span>Quantidade: {node.quantity}</span>
-              </div>
+              
+              {/* Mantido colInfo para alinhamento */}
               <div className={styles.colInfo}>
                 <span>{thicknessDisplay}</span>
               </div>
+
+              {/* MANTIDO O STEPPER VISUALMENTE PARA PRESERVAR O LAYOUT 
+                  Mas agora ele é apenas um display estático
+              */}
               <div className={styles.stepper}>
-                <button 
-                  onClick={() => handleUpdateQty(node.id, node.quantity, -1)}
-                  disabled={!!isUpdating}
-                  className={styles.stepBtn}
-                >
-                  <Minus size={14} />
-                </button>
-                <span className={styles.stepValue}>{node.quantity}</span>
-                <button 
-                  onClick={() => handleUpdateQty(node.id, node.quantity, 1)}
-                  disabled={!!isUpdating}
-                  className={styles.stepBtn}
-                >
-                  <Plus size={14} />
-                </button>
+                <span className={styles.stepValue}>{node.quantity} item(s)</span>
               </div>
+
               <div className={styles.colPrice}>
                 <span>Valor: {formatPrice(merchandise.price.amount, merchandise.price.currencyCode)}</span>
               </div>
+              
               <button 
                 onClick={() => handleRemove(node.id)}
                 disabled={!!isUpdating}
