@@ -1,10 +1,9 @@
 import { getCollectionProducts } from '@/lib/shopify';
 import { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://packon.com.br'; // Ajuste para seu domínio final
+const BASE_URL = 'https://packon.com.br';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // 1. Rotas Estáticas
   const routes = ['', '/produtos'].map((route) => ({
     url: `${BASE_URL}${route}`,
     lastModified: new Date().toISOString(),
@@ -12,8 +11,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 1.0,
   }));
 
-  // 2. Rotas Dinâmicas (Produtos)
-  const products = await getCollectionProducts("products"); // Use o handle da coleção principal
+
+  const products = await getCollectionProducts("products");
   
   const productRoutes = products.map(({ node }: any) => ({
     url: `${BASE_URL}/produtos/${node.handle}`,

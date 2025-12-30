@@ -14,6 +14,6 @@ export async function performSearch(term: string) {
     title: node.title,
     handle: node.handle,
     image: node.images.edges[0]?.node.url || null,
-    price: node.priceRange.minVariantPrice.amount // Opcional, se quiser mostrar preço
+    price: node.priceRange.minVariantPrice.amount
   }));
 }

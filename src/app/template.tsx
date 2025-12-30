@@ -12,12 +12,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useGSAP(() => {
-    // Garante scroll no topo
     window.scrollTo(0, 0);
-
-    // ANIMAÇÃO DE ENTRADA (MANTIDA)
     if (containerRef.current) {
-      // Forçamos o estado inicial "invisível" imediatamente para não piscar
       gsap.set(containerRef.current, {
         autoAlpha: 0,
         y: 40,
@@ -33,15 +29,15 @@ export default function Template({ children }: { children: React.ReactNode }) {
         duration: 0.8,
         ease: "power3.out",
         delay: 0.1,
-        clearProps: "all" // Importante: limpa para não atrapalhar interações futuras
+        clearProps: "all"
       });
     }
-  }, { scope: containerRef, dependencies: [pathname] }); // Roda sempre que a rota mudar
+  }, { scope: containerRef, dependencies: [pathname] });
 
   return (
     <div 
       ref={containerRef} 
-      id="page-transition-container" // ID CRUCIAL para o TransitionLink encontrar
+      id="page-transition-container"
       className={styles.transitionContainer}
     >
       {children}

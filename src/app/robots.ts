@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/private/'], // Protege rotas internas
+      disallow: ['/api/', '/private/'],
     },
     sitemap: 'https://packon.com.br/sitemap.xml', // Ajuste para seu domínio final
   };

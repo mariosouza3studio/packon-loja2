@@ -40,8 +40,6 @@ export default async function ProductPage(props: Props) {
     notFound(); 
   }
 
-  // --- CRIAÇÃO DO JSON-LD (DADOS ESTRUTURADOS) ---
-  // Isso informa ao Google/Robôs os dados técnicos do produto
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -55,7 +53,7 @@ export default async function ProductPage(props: Props) {
       availability: product.availableForSale 
         ? "https://schema.org/InStock" 
         : "https://schema.org/OutOfStock",
-      url: `https://packon.com.br/produtos/${product.handle}`, // Ajuste para seu domínio final
+      url: `https://packon.com.br/produtos/${product.handle}`,
     },
   };
 

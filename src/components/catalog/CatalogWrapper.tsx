@@ -9,13 +9,13 @@ import { formatPrice } from "@/utils/format";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import CustomSelect from "./CustomSelect";
-import { Filter, X, Plus } from "lucide-react"; // Adicionei o Plus para o botão
+import { Filter, X, Plus } from "lucide-react";
 
 interface CatalogWrapperProps {
   initialProducts: any[];
 }
 
-const ITEMS_PER_PAGE = 20; // Constante para fácil manutenção
+const ITEMS_PER_PAGE = 12;
 
 export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,13 +28,13 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
   const [sortOption, setSortOption] = useState<string>("recent");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
-  // Estado dos produtos filtrados (Total disponível após filtros)
+
   const [filteredProducts, setFilteredProducts] = useState(initialProducts);
 
   // NOVO: Estado para controlar quantos produtos aparecem na tela
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
-  // --- 1. Extração Dinâmica de Tipos ---
+
   const availableTypes = useMemo(() => {
     const types = new Set<string>();
     initialProducts.forEach(({ node }) => {
@@ -45,7 +45,7 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
     return ["Todos", ...Array.from(types)];
   }, [initialProducts]);
 
-  // --- 2. Cálculo do Preço Máximo Inicial ---
+
   const limitPrice = useMemo(() => {
     let max = 0;
     initialProducts.forEach(({ node }) => {
@@ -95,7 +95,6 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
         ease: "power2.in",
         onComplete: () => {
           setFilteredProducts([...result]);
-          // IMPORTANTE: Resetar paginação ao filtrar
           setVisibleCount(ITEMS_PER_PAGE);
         }
       });
@@ -119,18 +118,14 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
   }, [selectedType, maxPrice, sortOption, filterProducts]);
 
 
-  // --- CALCULA PRODUTOS VISÍVEIS ---
-  // Apenas cortamos o array filtrado com base no contador
+
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
   }, [filteredProducts, visibleCount]);
 
 
   // --- ANIMAÇÃO DE ENTRADA ---
-  // Atualizada para observar visibleProducts em vez de filteredProducts
   useGSAP(() => {
-    // Garante que os elementos estejam invisíveis antes de animar entrada
-    // O gsap.set garante que apenas os NOVOS ou re-renderizados peguem o estado inicial
     gsap.set(`.${styles.card}`, { opacity: 0, y: 30 });
 
     gsap.to(`.${styles.card}`, 
@@ -143,14 +138,14 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
         clearProps: "all" 
       }
     );
-  }, { scope: containerRef, dependencies: [visibleProducts] }); // Dependência alterada aqui
+  }, { scope: containerRef, dependencies: [visibleProducts] });
 
   // --- FUNÇÃO VER MAIS ---
   const handleLoadMore = () => {
     setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
   };
 
-  // Animação Mobile (Mantida igual)
+  // Animação Mobile
   useGSAP(() => {
     if (window.innerWidth <= 1024 && filterRef.current) {
       if (showMobileFilters) {
@@ -184,7 +179,6 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
   return (
     <div className={styles.contentWrapper} ref={containerRef}>
       
-      {/* ... (Mobile Header Mantido) ... */}
       <div className={styles.mobileFilterHeader}>
         <button 
           className={styles.mobileFilterBtn} 
@@ -195,7 +189,6 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
         </button>
       </div>
 
-      {/* ... (Sidebar Mantida igual) ... */}
       <aside className={styles.sidebar} ref={filterRef}>
         <div className={styles.filterGroup}>
           <label className={styles.filterTitle}>Ordenar por:</label>
@@ -245,15 +238,12 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
       </aside>
 
       {/* --- CONTEÚDO PRINCIPAL --- */}
-      <div className={styles.mainContent}> {/* Wrapper novo (opcional) ou div direta */}
+      <div className={styles.mainContent}> 
           
-          {/* GRID DE PRODUTOS */}
           <div className={styles.productsGrid}>
             {visibleProducts.length > 0 ? (
               visibleProducts.map(({ node }: any) => {
                   const image = node.images.edges[0]?.node;
-                  
-                  // LÓGICA DE PREÇO CORRIGIDA:
                   const firstVariant = node.variants?.edges[0]?.node;
                   const price = firstVariant?.price || node.priceRange.minVariantPrice;
 
@@ -277,7 +267,6 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
                       <div className={styles.info}>
                          <h3 className={styles.productTitle}>{node.title}</h3>
                          <p className={styles.productPrice}>
-                           {/* Formatando o preço correto */}
                            {formatPrice(price.amount, price.currencyCode)}
                          </p>
                          <button className={styles.buyButton}>
@@ -293,9 +282,6 @@ export default function CatalogWrapper({ initialProducts }: CatalogWrapperProps)
               </div>
             )}
           </div>
-
-          {/* --- BOTÃO VER MAIS --- */}
-          {/* Só renderiza se tiver mais produtos para mostrar */}
           {visibleCount < filteredProducts.length && (
             <div className={styles.loadMoreContainer}>
               <button onClick={handleLoadMore} className={styles.loadMoreButton}>

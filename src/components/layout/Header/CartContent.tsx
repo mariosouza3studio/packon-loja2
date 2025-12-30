@@ -58,17 +58,7 @@ export default function CartContent({ onBack }: CartContentProps) {
           const product = merchandise.product;
           const isLoading = isUpdating === node.id;
 
-          const thicknessOption = node.merchandise.selectedOptions?.find(
-            (opt: any) => {
-                const name = opt.name.toLowerCase();
-                return name.includes('espessura') || name.includes('expessura');
-            }
-          );
 
-          const label = "Espessura"; // Corrigi o typo "Expessura" para "Espessura"
-          const thicknessDisplay = thicknessOption 
-            ? `${label}: ${thicknessOption.value}` 
-            : `${label}: -`;
 
           return (
             <div key={node.id} className={styles.row} style={{ opacity: isLoading ? 0.5 : 1 }}>
@@ -91,9 +81,7 @@ export default function CartContent({ onBack }: CartContentProps) {
               </div>
               
               {/* Mantido colInfo para alinhamento */}
-              <div className={styles.colInfo}>
-                <span>{thicknessDisplay}</span>
-              </div>
+
 
               {/* MANTIDO O STEPPER VISUALMENTE PARA PRESERVAR O LAYOUT 
                   Mas agora ele é apenas um display estático

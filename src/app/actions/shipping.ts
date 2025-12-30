@@ -4,7 +4,7 @@
 interface ShippingItem {
   quantity: number;
   price: number;
-  weight: number; // Em KG (ex: 0.5 para 500g)
+  weight: number;
 }
 
 interface FrenetResponse {
@@ -28,11 +28,9 @@ export async function calculateShipping(destCep: string, items: ShippingItem[]) 
   }
 
   // Prepara os itens para o formato da Frenet
-  // OBS: Como Shopify Storefront as vezes não manda dimensões, usamos um fallback de caixa pequena (20x20x20)
-  // O peso é o mais importante para o cálculo base.
   const shippingItems = items.map((item) => ({
-    Weight: item.weight > 0 ? item.weight : 1, // Mínimo 1kg se vier zerado
-    Length: 20, // Ajuste conforme sua embalagem média
+    Weight: item.weight > 0 ? item.weight : 1,
+    Length: 20,
     Height: 20,
     Width: 20,
     Quantity: item.quantity,
@@ -50,7 +48,7 @@ export async function calculateShipping(destCep: string, items: ShippingItem[]) 
   };
 
   try {
-    const response = await fetch("http://api.frenet.com.br/shipping/quote", {
+    const response = await fetch("https://api.frenet.com.br/shipping/quote", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -70,12 +68,12 @@ export async function calculateShipping(destCep: string, items: ShippingItem[]) 
     const availableOptions = data.ShippingSevicesArray
       .filter(service => !service.Error)
       .map(service => ({
-        name: service.ServiceDescription, // Ex: SEDEX, PAC, Jadlog
+        name: service.ServiceDescription,
         carrier: service.Carrier,
         price: parseFloat(service.ShippingPrice),
         days: parseInt(service.DeliveryTime)
       }))
-      .sort((a, b) => a.price - b.price); // Menor preço primeiro
+      .sort((a, b) => a.price - b.price);
 
     return { success: true, options: availableOptions };
 

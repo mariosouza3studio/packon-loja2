@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
-import CartProvider from "@/components/CartProvider"; // Importe aqui
-import SearchResults from "@/components/layout/SearchResults"; // Importe o novo componente
+import CartProvider from "@/components/CartProvider";
+import SearchResults from "@/components/layout/SearchResults";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body className={inter.className}>
-        <CartProvider> {/* Envolva aqui */}
+        <CartProvider>
           <SmoothScroll>
             {children}
             <SearchResults />
