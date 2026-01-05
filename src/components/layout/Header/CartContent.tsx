@@ -6,6 +6,7 @@ import { Trash2, ArrowLeft } from "lucide-react"; // Removidos Plus e Minus
 import styles from "./cartContent.module.css";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/format";
+import { CartLine } from "@/lib/shopify/types";
 
 interface CartContentProps {
   onBack?: () => void;
@@ -53,7 +54,7 @@ export default function CartContent({ onBack }: CartContentProps) {
       {mobileHeader}
 
       <div className={styles.listContainer}>
-        {lines.map(({ node }: any) => {
+        {lines.map(({ node }: { node: CartLine }) => { 
           const merchandise = node.merchandise;
           const product = merchandise.product;
           const isLoading = isUpdating === node.id;

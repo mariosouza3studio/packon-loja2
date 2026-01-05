@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import styles from "./about.module.css";
+import { getWhatsAppLink, SITE_CONFIG } from "@/config/site";
 
 // --- CONFIGURAÇÃO WHATSAPP ---
 const WHATSAPP_NUMBER = "5535999521044"; 
@@ -124,13 +125,13 @@ export default function About() {
               
               {/* MUDANÇA AQUI: Link para WhatsApp */}
               <a 
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.linkButton}
-              >
-                Entre em Contato <ArrowRight size={20} />
-              </a>
+  href={getWhatsAppLink(SITE_CONFIG.whatsapp.aboutMessage)} // Mensagem personalizada para "Sobre"
+  target="_blank"
+  rel="noopener noreferrer"
+  className={styles.linkButton}
+>
+  Entre em Contato <ArrowRight size={20} />
+</a>
             </ScrollReveal>
           </div>
         </div>

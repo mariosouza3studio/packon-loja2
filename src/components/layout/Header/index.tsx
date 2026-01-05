@@ -90,15 +90,25 @@ export default function Header() {
   });
 
   useEffect(() => {
-    if (cartTl.current && window.innerWidth > 1024) {
-        if (isCartOpen) {
-            if (isMobileMenuOpen) toggleMobileMenu();
-            cartTl.current.play();
-        } else {
-            cartTl.current.reverse();
-        }
+    if (!lenis) return;
+
+    if (isCartOpen || isMobileMenuOpen) {
+      // Pausa o scroll da página principal instantaneamente
+      lenis.stop(); 
+      // Opcional: Adiciona classe no body para evitar scroll nativo se o Lenis falhar
+      document.body.style.overflow = 'hidden'; 
+    } else {
+      // Retoma o scroll suave
+      lenis.start();
+      document.body.style.overflow = '';
     }
-  }, [isCartOpen]);
+
+    // Cleanup de segurança
+    return () => {
+      lenis.start();
+      document.body.style.overflow = '';
+    };
+  }, [isCartOpen, isMobileMenuOpen, lenis]);
 
   const toggleMobileMenu = contextSafe(() => {
     if (!mobileTl.current) return;

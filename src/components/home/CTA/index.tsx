@@ -3,6 +3,7 @@
 import styles from "./cta.module.css";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { ArrowRight } from "lucide-react";
+import { getWhatsAppLink } from "@/config/site";
 
 // --- CONFIGURAÇÃO WHATSAPP ---
 const WHATSAPP_NUMBER = "5535999521044"; 
@@ -22,14 +23,14 @@ export default function CTA() {
         
         {/* MUDANÇA AQUI: Link para WhatsApp com estilo de botão */}
         <a 
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.button}
-            style={{ textDecoration: 'none' }}
-        >
-          Faça seu orçamento <ArrowRight size={22} />
-        </a>
+    href={getWhatsAppLink()} // Usa padrão
+    target="_blank"
+    rel="noopener noreferrer"
+    className={styles.button}
+    style={{ textDecoration: 'none' }}
+>
+  Faça seu orçamento <ArrowRight size={22} />
+</a>
 
       </ScrollReveal>
     </section>

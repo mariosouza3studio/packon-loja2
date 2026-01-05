@@ -29,7 +29,6 @@ export default function CustomSelect({ options, value, onChange }: CustomSelectP
   const toggleDropdown = () => setIsOpen(!isOpen);
 
   const handleSelect = (newValue: string) => {
-    // Se clicar no que já está selecionado, só fecha
     if (newValue === value) {
         setIsOpen(false);
         return;
@@ -42,22 +41,18 @@ export default function CustomSelect({ options, value, onChange }: CustomSelectP
     if (!boxRef.current || !listRef.current || !arrowRef.current) return;
 
     if (isOpen) {
-      // --- ABRIR ---
-      // 1. A caixa cresce para a altura "auto" (calculamos a altura do conteúdo)
-      // Usamos 'auto' no GSAP para ele calcular sozinho
       gsap.to(boxRef.current, {
         height: "auto",
-        borderRadius: "20px", // Reduz levemente o arredondamento ao abrir se quiser, ou mantém
-        boxShadow: "0 10px 30px rgba(0,0,0,0.3)", // Sombra surge
+        borderRadius: "20px",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
         duration: 0.5,
-        ease: "power3.out" // Curva suave igual do Header
+        ease: "power3.out"
       });
 
-      // 2. A lista aparece suavemente
       gsap.to(listRef.current, {
         opacity: 1,
         duration: 0.3,
-        delay: 0.1 // Pequeno delay para a caixa começar a abrir antes
+        delay: 0.1
       });
 
       // 3. A seta gira
@@ -67,23 +62,20 @@ export default function CustomSelect({ options, value, onChange }: CustomSelectP
       });
 
     } else {
-      // --- FECHAR ---
-      // 1. Volta para altura do botão (50px)
       gsap.to(boxRef.current, {
         height: "50px",
-        borderRadius: "25px", // Volta a ser pílula perfeita
+        borderRadius: "25px",
         boxShadow: "0 0 0 rgba(0,0,0,0)",
         duration: 0.4,
         ease: "power3.inOut"
       });
 
-      // 2. Lista some
+
       gsap.to(listRef.current, {
         opacity: 0,
         duration: 0.2
       });
 
-      // 3. Seta volta
       gsap.to(arrowRef.current, {
         rotation: 0,
         duration: 0.4
@@ -94,7 +86,6 @@ export default function CustomSelect({ options, value, onChange }: CustomSelectP
   return (
     <div className={styles.customSelectPlaceholder} ref={containerRef}>
       
-      {/* O elemento que expande visualmente */}
       <div className={styles.expandingBox} ref={boxRef}>
         
         {/* O Cabeçalho (Sempre visível) */}

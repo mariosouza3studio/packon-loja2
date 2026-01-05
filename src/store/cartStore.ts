@@ -1,15 +1,18 @@
+// src/store/cartStore.ts
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware'; // Importar createJSONStorage
 import { createCart, addToCart, getCart, removeLinesFromCart, updateLinesInCart } from '@/lib/shopify';
+import { ShopifyCart } from '@/lib/shopify/types';
 
 interface CartState {
-  cart: any;
+  cart: ShopifyCart | null;
   isOpen: boolean;
+  cartId: string | null; // Novo estado para guardar só o ID
   openCart: () => void;
   closeCart: () => void;
   addItem: (variantId: string, quantity: number) => Promise<void>;
-  removeItem: (lineId: string) => Promise<void>; // Nova função
-  updateQuantity: (lineId: string, quantity: number) => Promise<void>; // Nova função
+  removeItem: (lineId: string) => Promise<void>;
+  updateQuantity: (lineId: string, quantity: number) => Promise<void>;
   initCart: () => Promise<void>;
 }
 
@@ -18,67 +21,72 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       cart: null,
       isOpen: false,
+      cartId: null,
 
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
 
       initCart: async () => {
-        const existingCartId = get().cart?.id;
+        const { cartId } = get();
         
-        if (existingCartId) {
-          const freshCart = await getCart(existingCartId);
+        if (cartId) {
+          // Busca dados frescos da Shopify
+          const freshCart = await getCart(cartId);
           if (freshCart) {
             set({ cart: freshCart });
             return;
           }
         }
-        
+        // Se não tem ID ou o ID expirou na Shopify, cria um novo
         const newCart = await createCart();
-        set({ cart: newCart });
+        if (newCart) {
+            set({ cart: newCart, cartId: newCart.id });
+        }
       },
 
       addItem: async (variantId: string, quantity: number) => {
-        let cartId = get().cart?.id;
+        let { cartId } = get();
+        let currentCart = get().cart;
 
-        if (!cartId) {
+        if (!cartId || !currentCart) {
           const newCart = await createCart();
-          cartId = newCart.id;
-          set({ cart: newCart });
+          if (newCart) {
+            cartId = newCart.id;
+            set({ cart: newCart, cartId: newCart.id });
+          } else {
+             return; 
+          }
         }
 
         set({ isOpen: true });
+        // Otimistic Update (Opcional, mas arriscado em Headless, melhor esperar)
         const updatedCart = await addToCart(cartId, [{ merchandiseId: variantId, quantity }]);
-        set({ cart: updatedCart });
+        if (updatedCart) set({ cart: updatedCart });
       },
 
-      // --- NOVAS FUNÇÕES ---
-
       removeItem: async (lineId: string) => {
-        const cartId = get().cart?.id;
+        const { cartId } = get();
         if (!cartId) return;
-
         const updatedCart = await removeLinesFromCart(cartId, [lineId]);
-        set({ cart: updatedCart });
+        if (updatedCart) set({ cart: updatedCart });
       },
 
       updateQuantity: async (lineId: string, quantity: number) => {
-        const cartId = get().cart?.id;
+        const { cartId } = get();
         if (!cartId) return;
-
-        // Se a quantidade for 0 ou menor, removemos o item
         if (quantity <= 0) {
           const updatedCart = await removeLinesFromCart(cartId, [lineId]);
-          set({ cart: updatedCart });
+          if (updatedCart) set({ cart: updatedCart });
           return;
         }
-
         const updatedCart = await updateLinesInCart(cartId, [{ id: lineId, quantity }]);
-        set({ cart: updatedCart });
+        if (updatedCart) set({ cart: updatedCart });
       }
     }),
     {
       name: 'packon-cart-storage',
-      partialize: (state) => ({ cart: state.cart }),
+      // MÁGICA AQUI: Persistimos APENAS o cartId
+      partialize: (state) => ({ cartId: state.cartId }),
     }
   )
 );

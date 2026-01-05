@@ -1,12 +1,15 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = "https://packon.com.br"; // Garanta que este domínio está correto
+
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/private/'],
+      // Bloqueamos rotas de API internas e parâmetros de busca para não gastar "crawl budget" do Google
+      disallow: ['/api/', '/cart', '/account', '/*?*'], 
     },
-    sitemap: 'https://packon.com.br/sitemap.xml', // Ajuste para seu domínio final
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }

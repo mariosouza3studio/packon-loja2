@@ -6,20 +6,14 @@ import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { formatPrice } from "@/utils/format";
 import TransitionLink from "@/components/ui/TransitionLink"; 
 import { useCartStore } from "@/store/cartStore";
+import { ShopifyProduct } from "@/lib/shopify/types"; // <--- IMPORTAÇÃO NOVA
 
-// Atualize a interface para refletir que agora temos preço na variante
-interface ProductNode {
-  id: string;
-  title: string;
-  handle: string;
-  priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
-  images: { edges: { node: { url: string; altText: string } }[] };
-  // Adicionado price aqui
-  variants: { edges: { node: { id: string; availableForSale: boolean; price: { amount: string; currencyCode: string } } }[] };
-}
+// Removemos a interface manual antiga "ProductNode". 
+// Agora usamos a oficial.
 
 interface PopularProps {
-  products: { node: ProductNode }[];
+  // O tipo é um Array de objetos que contém a propriedade "node" do tipo ShopifyProduct
+  products: { node: ShopifyProduct }[];
 }
 
 export default function Popular({ products }: PopularProps) {
@@ -41,10 +35,10 @@ export default function Popular({ products }: PopularProps) {
       <ScrollReveal className={styles.gridContainer} stagger={0.1}>
         {products.map(({ node: product }) => {
           const image = product.images.edges[0]?.node;
-          const firstVariant = product.variants?.edges[0]?.node;
+          const firstVariant = product.variants.edges[0]?.node;
           
-          // LÓGICA DE PREÇO CORRIGIDA:
-          // Prioriza o preço da primeira variante. Se não existir, usa o range.
+          // LÓGICA DE PREÇO:
+          // Usa o preço da primeira variante. Se não tiver variante (raro), usa o do range.
           const price = firstVariant?.price || product.priceRange.minVariantPrice;
           
           const isAvailable = firstVariant?.availableForSale;
@@ -70,7 +64,6 @@ export default function Popular({ products }: PopularProps) {
               <div className={styles.info}>
                 <h3 className={styles.productName}>{product.title}</h3>
                 <p className={styles.price}>
-                  {/* Exibe o preço correto agora */}
                   {formatPrice(price.amount, price.currencyCode)}
                 </p>
               </div>

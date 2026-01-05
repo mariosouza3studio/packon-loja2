@@ -1,0 +1,105 @@
+/* src/components/ui/skeletons.module.css */
+
+.shimmer {
+  background: #111; /* Um pouco mais claro que o fundo #020202 */
+  background-image: linear-gradient(
+    to right,
+    #111 0%,
+    #1a1a1a 20%, /* O brilho passando */
+    #111 40%,
+    #111 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 200% 100%; 
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Formas Utilitárias */
+.rect {
+  width: 100%;
+  height: 100%;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+/* Estrutura específica do Catálogo (Cópia do seu Grid original) */
+.catalogGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  width: 100%;
+}
+
+/* O Card Fantasma */
+.cardSkeleton {
+  border: 1px solid rgba(255,255,255,0.05); /* Borda muito sutil */
+  border-radius: 30px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 500px; /* Altura média do seu card real */
+  width: 100%;
+}
+
+/* Áreas do Card */
+.imageArea {
+  width: 100%;
+  height: 200px;
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+}
+
+.titleArea {
+  width: 80%;
+  height: 24px;
+  border-radius: 4px;
+  margin-bottom: 0.8rem;
+}
+
+.priceArea {
+  width: 40%;
+  height: 20px;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+}
+
+.buttonArea {
+  width: 100%;
+  max-width: 200px;
+  height: 45px;
+  border-radius: 99px;
+}
+
+/* Responsividade igual ao seu CSS original */
+@media (max-width: 1024px) {
+  .catalogGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .catalogGrid {
+    grid-template-columns: 1fr;
+  }
+  .cardSkeleton {
+    height: auto;
+    min-height: 450px;
+  }
+}

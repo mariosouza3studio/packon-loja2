@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import styles from "./hero.module.css";
 import { ArrowRight } from "lucide-react";
+import { getWhatsAppLink } from "@/config/site";
 
 // --- CONFIGURAÇÃO DO WHATSAPP ---
 // Substitua pelo número da Packon (Formato: 55 + DDD + Numero)
@@ -182,15 +183,15 @@ export default function Hero() {
 
       {/* MUDANÇA AQUI: Transformado em Link <a> para SEO e Acessibilidade */}
       <a 
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={styles.ctaButton} 
-        ref={buttonRef}
-        style={{ textDecoration: 'none' }} // Garante que não tenha sublinhado
-      >
-        Faça seu orçamento <ArrowRight size={22} />
-      </a>
+  href={getWhatsAppLink()} // Usa a mensagem padrão definida no config
+  target="_blank"
+  rel="noopener noreferrer"
+  className={styles.ctaButton} 
+  ref={buttonRef}
+  style={{ textDecoration: 'none' }}
+>
+  Faça seu orçamento <ArrowRight size={22} />
+</a>
     </section>
   );
 }

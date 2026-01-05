@@ -8,12 +8,12 @@ import { useGSAP } from "@gsap/react";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 const CATEGORIES = [
-  { id: 1, name: "Stand-up", img: "/image4.png" },
-  { id: 2, name: "Pouch",  img: "/image5.png" },
-  { id: 3, name: "Vácuo",  img: "/image6.png" },
-  { id: 4, name: "Laminada",  img: "/image7.png" },
-  { id: 5, name: "Sustentável",  img: "/image8.png" },
-  { id: 6, name: "Flow Pack",  img: "/image9.png" },
+  { id: 1, name: "Vácuo",  img: "/image2.png" },
+  { id: 2, name: "4 Soldas",  img: "/image5.png" },
+  { id: 3, name: "Stand Up",  img: "/image6.png" },
+  { id: 4, name: "Box Pouch",  img: "/image7.png" },
+  { id: 5, name: "Pouch Lateral",  img: "/image8.png" },
+  { id: 6, name: "Etiqueta",  img: "/image9.png" },
 ];
 
 export default function Categories() {
