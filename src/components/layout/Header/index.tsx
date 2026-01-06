@@ -130,28 +130,51 @@ export default function Header() {
   };
 
   // --- NOVA FUNÇÃO: SCROLL SUAVE PARA ÂNCORAS ---
-  const handleScrollTo = (e: React.MouseEvent, targetId: string) => {
-    e.preventDefault(); // Evita navegação padrão
+const handleScrollTo = (e: React.MouseEvent, targetId: string) => {
+    e.preventDefault(); // Evita o comportamento padrão de pular seco
 
-    // Se estiver no Mobile Menu, fecha ele primeiro
-    if (isMobileMenuOpen) {
-      toggleMobileMenu();
-    }
-
-    // Se não estiver na Home, forçamos ir para home primeiro (Opcional, mas seguro)
+    // 1. Lógica para quando NÃO estamos na Home (Redirecionamento)
     if (pathname !== "/") {
+      if (isMobileMenuOpen) toggleMobileMenu(); // Fecha se estiver aberto
       router.push("/");
-      // Pequeno delay para esperar a página carregar (solução simples para SPA híbrida)
+      
+      // Delay maior para dar tempo da página carregar
       setTimeout(() => {
         const element = document.getElementById(targetId);
         if (element) element.scrollIntoView({ behavior: 'smooth' });
-      }, 500);
+      }, 800);
       return;
     }
 
-    // Se já estiver na Home e o Lenis existir
-    if (lenis) {
-      // O offset -100 compensa a altura do Header fixo para não cobrir o título
+    // 2. Se o Lenis não estiver carregado, fallback nativo
+    if (!lenis) {
+       const element = document.getElementById(targetId);
+       if (element) element.scrollIntoView({ behavior: 'smooth' });
+       return;
+    }
+
+    // 3. Lógica Mobile e Desktop Unificadas
+    if (isMobileMenuOpen) {
+      // A. Fecha o menu visualmente (inicia animação reversa)
+      toggleMobileMenu();
+
+      // B. FORÇA O DESTRAVAMENTO IMEDIATO
+      // Não esperamos o useEffect reagir ao state, destravamos agora para o scroll funcionar
+      lenis.start();
+      document.body.style.overflow = '';
+
+      // C. Executa o scroll com leve delay para suavidade visual (espera o menu começar a subir)
+      setTimeout(() => {
+        lenis.scrollTo(`#${targetId}`, { 
+            offset: -100, // Compensação da altura do Header
+            duration: 1.5,
+            lock: true, // Garante que o scroll aconteça mesmo se o usuário tentar intervir
+            force: true // Força o scroll mesmo se o lenis achar que está parado
+        });
+      }, 300); // 300ms casa bem com a animação de saída do menu
+
+    } else {
+      // Desktop ou Menu Fechado: Scroll direto
       lenis.scrollTo(`#${targetId}`, { offset: -100, duration: 1.5 });
     }
   };
