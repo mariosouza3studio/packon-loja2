@@ -1,3 +1,4 @@
+export const dynamic = 'force-static';
 import { getCollectionProducts, getAllCollections } from '@/lib/shopify';
 import { MetadataRoute } from 'next';
 
