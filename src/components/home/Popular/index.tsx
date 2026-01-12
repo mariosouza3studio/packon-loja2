@@ -5,26 +5,17 @@ import styles from "./popular.module.css";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { formatPrice } from "@/utils/format";
 import TransitionLink from "@/components/ui/TransitionLink"; 
-import { useCartStore } from "@/store/cartStore";
-import { ShopifyProduct } from "@/lib/shopify/types"; // <--- IMPORTAÇÃO NOVA
-
-// Removemos a interface manual antiga "ProductNode". 
-// Agora usamos a oficial.
+import { ShopifyProduct } from "@/lib/shopify/types";
 
 interface PopularProps {
-  // O tipo é um Array de objetos que contém a propriedade "node" do tipo ShopifyProduct
   products: { node: ShopifyProduct }[];
 }
 
 export default function Popular({ products }: PopularProps) {
-  const { addItem, openCart } = useCartStore();
+  // REMOVIDO: const { addItem, openCart } = useCartStore(); 
+  // Não precisamos mais da lógica de carrinho aqui, o componente fica mais leve.
 
   if (!products || products.length === 0) return null;
-
-  const handleAddToCart = async (variantId: string) => {
-    await addItem(variantId, 1);
-    openCart();
-  };
 
   return (
     <section className={styles.popularSection}>
@@ -37,10 +28,7 @@ export default function Popular({ products }: PopularProps) {
           const image = product.images.edges[0]?.node;
           const firstVariant = product.variants.edges[0]?.node;
           
-          // LÓGICA DE PREÇO:
-          // Usa o preço da primeira variante. Se não tiver variante (raro), usa o do range.
           const price = firstVariant?.price || product.priceRange.minVariantPrice;
-          
           const isAvailable = firstVariant?.availableForSale;
 
           return (
@@ -68,14 +56,32 @@ export default function Popular({ products }: PopularProps) {
                 </p>
               </div>
 
-              <button 
+              {/* MUDANÇA AQUI:
+                  1. Trocamos <button> por <TransitionLink> para manter a animação de página.
+                  2. Mantivemos className={styles.buyButton} para preservar 100% do visual.
+                  3. Adicionamos estilos inline para garantir que o Link (que é um <a>)
+                     se comporte visualmente igual a um botão (centralizado e bloco).
+              */}
+              <TransitionLink
+                href={isAvailable ? `/produtos/${product.handle}` : '#'}
                 className={styles.buyButton}
-                onClick={() => firstVariant && handleAddToCart(firstVariant.id)}
-                disabled={!isAvailable}
-                style={{ opacity: isAvailable ? 1 : 0.5, cursor: isAvailable ? 'pointer' : 'not-allowed' }}
+                onClick={(e) => {
+                   // Previne a navegação se estiver indisponível
+                   if (!isAvailable) e.preventDefault();
+                }}
+                style={{ 
+                  opacity: isAvailable ? 1 : 0.5, 
+                  cursor: isAvailable ? 'pointer' : 'not-allowed',
+                  display: 'flex',           // Garante comportamento de caixa
+                  justifyContent: 'center',  // Centraliza texto horizontalmente
+                  alignItems: 'center',      // Centraliza texto verticalmente
+                  textDecoration: 'none',    // Remove sublinhado padrão de links
+                  textAlign: 'center'
+                }}
               >
-                {isAvailable ? 'Adicionar ao carrinho' : 'Indisponível'}
-              </button>
+                {isAvailable ? 'Comprar Agora' : 'Indisponível'}
+              </TransitionLink>
+              
             </div>
           );
         })}
