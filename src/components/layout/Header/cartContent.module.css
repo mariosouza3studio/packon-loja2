@@ -7,12 +7,27 @@
   flex-direction: column;
   gap: 2rem;
   color: #fff;
+  height: 100%; /* Garante altura para alinhar footer se precisar */
 }
 
 .emptyState {
-  text-align: center;
-  padding: 3rem;
-  color: #999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  color: #666;
+  gap: 1rem;
+}
+
+.emptyIconWrapper {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.emptySubtitle {
+  font-size: 0.9rem;
+  color: #444;
 }
 
 .listContainer {

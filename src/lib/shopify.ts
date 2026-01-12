@@ -1,107 +1,170 @@
 // src/lib/shopify.ts
+
 import { 
   ShopifyProduct, 
   ShopifyCart, 
   Connection, 
-  ShopifyVariant,
-  Edge
+  ShopifyVariant, 
+  Edge 
 } from "./shopify/types";
 
-const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN!;
-const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_ACCESS_TOKEN!;
+
+// --- 1. Validação "Fail-Fast" de Variáveis de Ambiente ---
+const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN;
+const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_ACCESS_TOKEN;
+const API_VERSION = "2024-01"; // Constante para fácil atualização
 
 if (!domain || !storefrontAccessToken) {
-  throw new Error('⚠️ Faltam variáveis de ambiente da Shopify (.env.local)');
+  throw new Error('⚠️ CRÍTICO: Variáveis de ambiente da Shopify não configuradas (.env.local)');
 }
 
-// Interface padronizada para resposta da API
-interface ShopifyResponse<T> {
-  data: T;
-  errors?: Array<{ message: string }>;
-}
+const ENDPOINT = `https://${domain}/api/${API_VERSION}/graphql.json`;
 
-// Configuração de Cache
+// --- 2. Interfaces e Tipos Auxiliares ---
+
+export type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'created_desc';
+
 interface ShopifyFetchOptions {
   cache?: RequestCache;
   tags?: string[];
   revalidate?: number;
+  variables?: Record<string, any>;
 }
 
+interface ShopifyError {
+  message: string;
+  locations?: { line: number; column: number }[];
+  path?: string[];
+}
+
+interface ShopifyResponse<T> {
+  data?: T;
+  errors?: ShopifyError[];
+}
+
+interface FilterOptions {
+  query?: string; // Busca textual
+  productType?: string;
+  maxPrice?: number;
+  sort?: SortOption;
+  reverse?: boolean;
+}
+
+// --- 3. Utilitário de Delay para Backoff (Espera Inteligente) ---
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
- * Função Fetcher Genérica, Blindada e com Cache
+ * Função Fetcher Robusta
+ * - Suporta Retries automáticos (429/5xx)
+ * - Timeout configurado
+ * - Tipagem genérica
  */
 async function ShopifyData<T>(
   query: string, 
-  variables = {}, 
   options: ShopifyFetchOptions = {}
-): Promise<ShopifyResponse<T>> {
-  const URL = `https://${domain}/api/2024-01/graphql.json`;
+): Promise<{ data: T; errors?: ShopifyError[] }> { // Retorno simplificado para uso interno
   
-  const { cache, tags, revalidate } = options;
-
-  const fetchOptions: RequestInit = {
-    method: "POST",
-    headers: {
-      "X-Shopify-Storefront-Access-Token": storefrontAccessToken,
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ query, variables }),
-    // ESTRATÉGIA DE CACHE:
-    // 1. Se passar tags/revalidate, usa o 'next' options (Padrão Next.js 14+)
-    // 2. Se não, usa o cache padrão 'force-cache'
-    ...(cache && { cache }),
-    ...((tags || revalidate) && { 
-      next: { 
-        tags, 
-        revalidate 
-      } 
-    })
-  };
-
-  // Substitua o trecho do try/catch na função ShopifyData
-
-try {
-  // Adicionar timeout para não travar a requisição infinitamente
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos de timeout
-
-  const response = await fetch(URL, { ...fetchOptions, signal: controller.signal });
-  clearTimeout(timeoutId);
+  const { cache, tags, revalidate, variables = {} } = options;
   
-  if (!response.ok) {
-      // Log mais descritivo sem expor dados sensíveis ao cliente
-      console.error(`[Shopify Fetch Error] Status: ${response.status} ${response.statusText} | Query: ${query.substring(0, 50)}...`);
-      // Retornar um objeto de erro padronizado ao invés de throw crashar tudo
-      return { data: {} as T, errors: [{ message: `Erro de comunicação: ${response.status}` }] };
+  // Configurações de Resiliência
+  const MAX_RETRIES = 3;
+  const BASE_DELAY = 500; // 500ms inicial
+  const TIMEOUT_MS = 8000; // 8 segundos limite
+
+  let attempt = 0;
+
+  while (attempt < MAX_RETRIES) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      const headers = {
+        "X-Shopify-Storefront-Access-Token": storefrontAccessToken!,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      };
+
+      const response = await fetch(ENDPOINT, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ query, variables }),
+        signal: controller.signal,
+        ...(cache && { cache }),
+        ...((tags || revalidate) && { 
+          next: { 
+            tags, 
+            revalidate 
+          } 
+        })
+      });
+
+      clearTimeout(timeoutId);
+
+      // --- Lógica de Rate Limiting (Throttle) ---
+      if (response.status === 429 || response.status >= 500) {
+        const retryAfter = response.headers.get("Retry-After");
+        const waitTime = retryAfter 
+          ? parseInt(retryAfter, 10) * 1000 
+          : BASE_DELAY * Math.pow(2, attempt); // Backoff Exponencial (500ms -> 1000ms -> 2000ms)
+
+        console.warn(`[Shopify] Rate Limit/Erro ${response.status}. Tentativa ${attempt + 1}/${MAX_RETRIES}. Aguardando ${waitTime}ms...`);
+        await sleep(waitTime);
+        attempt++;
+        continue; // Tenta de novo
+      }
+
+      if (!response.ok) {
+        throw new Error(`[Shopify API Error] Status: ${response.status} ${response.statusText}`);
+      }
+
+      const json: ShopifyResponse<T> = await response.json();
+
+      if (json.errors) {
+        // Log detalhado mas seguro
+        console.error("[Shopify GraphQL Error]", JSON.stringify(json.errors.map(e => e.message), null, 2));
+        // Dependendo da severidade, poderíamos lançar erro, mas retornamos para a UI tratar
+      }
+
+      return { 
+        data: json.data as T, 
+        errors: json.errors 
+      };
+
+    } catch (error: any) {
+      const isTimeout = error.name === 'AbortError';
+      
+      // Se for timeout ou erro de rede, tentamos de novo
+      if (isTimeout || error.message.includes('fetch')) {
+         console.warn(`[Shopify Network/Timeout] Tentativa ${attempt + 1}/${MAX_RETRIES} falhou.`);
+         attempt++;
+         if (attempt === MAX_RETRIES) {
+            console.error(`[Shopify Critical] Falha final após ${MAX_RETRIES} tentativas.`);
+            return { 
+               data: {} as T, 
+               errors: [{ message: isTimeout ? 'O servidor demorou muito para responder.' : 'Erro de conexão com a loja.' }] 
+            };
+         }
+         await sleep(BASE_DELAY * Math.pow(2, attempt)); // Espera antes de tentar
+         continue;
+      }
+
+      // Erros de programação ou lógica não devem ter retry
+      console.error("[Shopify Critical Error]", error);
+      return { data: {} as T, errors: [{ message: error.message }] };
+    }
   }
 
-  const data = await response.json();
-
-  if (data.errors) {
-    console.error("[Shopify GraphQL Error]", JSON.stringify(data.errors, null, 2));
-    // Não dar throw aqui permite que a UI decida o que fazer (ex: mostrar lista vazia ao invés de página de erro 500)
-  }
-  
-  return data;
-} catch (error: any) {
-  console.error("[Shopify Network Error]", error);
-  // Retorno seguro para não quebrar a destructuring { data } no consumidor
-  return { 
-    data: {} as T, 
-    errors: [{ message: error.name === 'AbortError' ? 'Timeout na requisição' : 'Falha de rede' }] 
-  };
-}
+  return { data: {} as T, errors: [{ message: "Erro desconhecido na comunicação." }] };
 }
 
 // ==========================================
-// PRODUTOS E COLEÇÕES
+// MÉTODOS PÚBLICOS (API)
 // ==========================================
 
 export async function getProductsInCollection(handle: string): Promise<Edge<ShopifyProduct>[]> {
   const query = `
-  {
-    collectionByHandle(handle: "${handle}") {
+  query getCollectionProducts($handle: String!) {
+    collectionByHandle(handle: $handle) {
       products(first: 9) {
         edges {
           node {
@@ -133,19 +196,21 @@ export async function getProductsInCollection(handle: string): Promise<Edge<Shop
     }
   }`;
 
-  // Cache: Revalida a cada 1 hora ou se a tag 'collection' for invalidada
-  const response = await ShopifyData<{ collectionByHandle: { products: Connection<ShopifyProduct> } }>(
+  const res = await ShopifyData<{ collectionByHandle: { products: Connection<ShopifyProduct> } }>(
     query, 
-    {}, 
-    { tags: ['collection', 'products'], revalidate: 3600 } 
+    { 
+      variables: { handle }, // Usando variáveis GraphQL (Mais seguro e limpo)
+      tags: ['collection', 'products'], 
+      revalidate: 3600 
+    }
   );
   
-  return response.data?.collectionByHandle?.products?.edges || [];
+  return res.data?.collectionByHandle?.products?.edges || [];
 }
 
 export async function getAllCollections() {
   const query = `
-  {
+  query getCollections {
     collections(first: 10) {
       edges {
         node {
@@ -158,18 +223,19 @@ export async function getAllCollections() {
     }
   }`;
 
-  const response = await ShopifyData<{ collections: Connection<any> }>(
+  const res = await ShopifyData<{ collections: Connection<any> }>(
     query,
-    {},
-    { tags: ['collections'], revalidate: 86400 } // Cache longo (24h) para lista de coleções
+    { tags: ['collections'], revalidate: 86400 }
   );
-  return response.data?.collections?.edges || [];
+  return res.data?.collections?.edges || [];
 }
 
 export async function getCollectionProducts(collectionHandle: string, sortKey = "CREATED", reverse = false) {
+  // Nota: sortKey e reverse não são variáveis simples, geralmente são Enums no GraphQL, 
+  // então interpolar na string ainda é comum, mas o handle deve ser var.
   const query = `
-  {
-    collectionByHandle(handle: "${collectionHandle}") {
+  query getCollectionProductsSorted($handle: String!) {
+    collectionByHandle(handle: $handle) {
       products(first: 100, sortKey: ${sortKey}, reverse: ${reverse}) {
         edges {
           node {
@@ -200,22 +266,21 @@ export async function getCollectionProducts(collectionHandle: string, sortKey = 
     }
   }`;
 
-  const response = await ShopifyData<{ collectionByHandle: { products: Connection<ShopifyProduct> } }>(
+  const res = await ShopifyData<{ collectionByHandle: { products: Connection<ShopifyProduct> } }>(
     query,
-    {},
-    { tags: ['products', `collection-${collectionHandle}`], revalidate: 3600 }
+    { 
+      variables: { handle: collectionHandle },
+      tags: ['products', `collection-${collectionHandle}`], 
+      revalidate: 3600 
+    }
   );
-  return response.data?.collectionByHandle?.products?.edges || [];
+  return res.data?.collectionByHandle?.products?.edges || [];
 }
-
-// ==========================================
-// DETALHE DO PRODUTO (Recursividade Type-Safe)
-// ==========================================
 
 export async function getProduct(handle: string): Promise<ShopifyProduct | null> {
   const mainQuery = `
-  {
-    productByHandle(handle: "${handle}") {
+  query getProductDetails($handle: String!) {
+    productByHandle(handle: $handle) {
       id
       title
       handle
@@ -238,8 +303,11 @@ export async function getProduct(handle: string): Promise<ShopifyProduct | null>
 
   const mainResponse = await ShopifyData<{ productByHandle: ShopifyProduct }>(
     mainQuery,
-    {},
-    { tags: [`product-${handle}`], revalidate: 1800 } // 30 min cache para produto individual
+    { 
+      variables: { handle },
+      tags: [`product-${handle}`], 
+      revalidate: 1800 
+    }
   );
   
   const product = mainResponse.data?.productByHandle;
@@ -252,7 +320,8 @@ export async function getProduct(handle: string): Promise<ShopifyProduct | null>
   return {
     ...product,
     variants: {
-      edges: allVariants
+      edges: allVariants,
+      pageInfo: { hasNextPage: false, endCursor: null } // Mock para satisfazer o tipo Connection
     }
   };
 }
@@ -261,7 +330,7 @@ export async function getProduct(handle: string): Promise<ShopifyProduct | null>
 async function getAllVariants(
   handle: string, 
   cursor: string | null = null, 
-  accumulatedVariants: Edge<ShopifyVariant>[] = [] // Tipagem corrigida: Array de Edges
+  accumulatedVariants: Edge<ShopifyVariant>[] = [] 
 ): Promise<Edge<ShopifyVariant>[]> {
   
   const query = `
@@ -286,8 +355,10 @@ async function getAllVariants(
 
   const response = await ShopifyData<{ productByHandle: { variants: Connection<ShopifyVariant> } }>(
     query, 
-    { handle, cursor },
-    { cache: 'no-store' } // Variantes não devem cachear agressivamente na recursão para evitar dados parciais
+    { 
+      variables: { handle, cursor },
+      cache: 'no-store' // Recursão sempre fresca
+    } 
   );
   
   const variantData = response.data?.productByHandle?.variants;
@@ -297,6 +368,8 @@ async function getAllVariants(
   const newVariants = [...accumulatedVariants, ...variantData.edges];
 
   if (variantData.pageInfo?.hasNextPage) {
+    // Delay pequeno para não bater rate limit em produtos com muitas variantes
+    await sleep(200); 
     return getAllVariants(handle, variantData.pageInfo.endCursor, newVariants);
   }
 
@@ -304,7 +377,7 @@ async function getAllVariants(
 }
 
 // ==========================================
-// CARRINHO (CART) - SEMPRE NO-STORE (Dados Frescos)
+// CARRINHO (CART) - SEMPRE NO-STORE
 // ==========================================
 
 const CART_FRAGMENT = `
@@ -340,19 +413,21 @@ const CART_FRAGMENT = `
   }
 `;
 
-// Carrinho nunca deve ter cache
-const CART_OPTIONS: ShopifyFetchOptions = { cache: 'no-store' };
+const CART_OPTIONS: Partial<ShopifyFetchOptions> = { cache: 'no-store' };
 
 export async function createCart(): Promise<ShopifyCart | null> {
   const query = `mutation cartCreate { cartCreate { cart { ${CART_FRAGMENT} } } }`;
-  const response = await ShopifyData<{ cartCreate: { cart: ShopifyCart } }>(query, {}, CART_OPTIONS);
-  return response.data?.cartCreate?.cart || null;
+  const res = await ShopifyData<{ cartCreate: { cart: ShopifyCart } }>(query, CART_OPTIONS);
+  return res.data?.cartCreate?.cart || null;
 }
 
 export async function getCart(cartId: string): Promise<ShopifyCart | null> {
-  const query = `{ cart(id: "${cartId}") { ${CART_FRAGMENT} } }`;
-  const response = await ShopifyData<{ cart: ShopifyCart }>(query, {}, CART_OPTIONS);
-  return response.data?.cart || null;
+  const query = `query getCart($id: ID!) { cart(id: $id) { ${CART_FRAGMENT} } }`;
+  const res = await ShopifyData<{ cart: ShopifyCart }>(
+    query, 
+    { ...CART_OPTIONS, variables: { id: cartId } }
+  );
+  return res.data?.cart || null;
 }
 
 export async function addToCart(cartId: string, lines: { merchandiseId: string; quantity: number }[]): Promise<ShopifyCart | null> {
@@ -362,8 +437,11 @@ export async function addToCart(cartId: string, lines: { merchandiseId: string; 
       cart { ${CART_FRAGMENT} }
     }
   }`;
-  const response = await ShopifyData<{ cartLinesAdd: { cart: ShopifyCart } }>(query, { cartId, lines }, CART_OPTIONS);
-  return response.data?.cartLinesAdd?.cart || null;
+  const res = await ShopifyData<{ cartLinesAdd: { cart: ShopifyCart } }>(
+    query, 
+    { ...CART_OPTIONS, variables: { cartId, lines } }
+  );
+  return res.data?.cartLinesAdd?.cart || null;
 }
 
 export async function removeLinesFromCart(cartId: string, lineIds: string[]): Promise<ShopifyCart | null> {
@@ -373,8 +451,11 @@ export async function removeLinesFromCart(cartId: string, lineIds: string[]): Pr
       cart { ${CART_FRAGMENT} }
     }
   }`;
-  const response = await ShopifyData<{ cartLinesRemove: { cart: ShopifyCart } }>(query, { cartId, lineIds }, CART_OPTIONS);
-  return response.data?.cartLinesRemove?.cart || null;
+  const res = await ShopifyData<{ cartLinesRemove: { cart: ShopifyCart } }>(
+    query, 
+    { ...CART_OPTIONS, variables: { cartId, lineIds } }
+  );
+  return res.data?.cartLinesRemove?.cart || null;
 }
 
 export async function updateLinesInCart(cartId: string, lines: { id: string; quantity: number }[]): Promise<ShopifyCart | null> {
@@ -384,8 +465,11 @@ export async function updateLinesInCart(cartId: string, lines: { id: string; qua
       cart { ${CART_FRAGMENT} }
     }
   }`;
-  const response = await ShopifyData<{ cartLinesUpdate: { cart: ShopifyCart } }>(query, { cartId, lines }, CART_OPTIONS);
-  return response.data?.cartLinesUpdate?.cart || null;
+  const res = await ShopifyData<{ cartLinesUpdate: { cart: ShopifyCart } }>(
+    query, 
+    { ...CART_OPTIONS, variables: { cartId, lines } }
+  );
+  return res.data?.cartLinesUpdate?.cart || null;
 }
 
 // ==========================================
@@ -393,9 +477,12 @@ export async function updateLinesInCart(cartId: string, lines: { id: string; qua
 // ==========================================
 
 export async function searchProducts(term: string) {
+  // Sanitização simples para evitar quebra da query string
+  const sanitizedTerm = term.replace(/"/g, '\\"');
+  
   const query = `
-  {
-    products(first: 5, query: "title:${term}*") {
+  query searchProducts($query: String!) {
+    products(first: 5, query: $query) {
       edges {
         node {
           id
@@ -412,11 +499,14 @@ export async function searchProducts(term: string) {
     }
   }`;
 
-  // Busca rápida pode ter um cache curto
-  const response = await ShopifyData<{ products: Connection<any> }>(
-    query, 
-    {}, 
-    { revalidate: 300 } // 5 minutos
+  const res = await ShopifyData<{ products: Connection<any> }>(
+    query,
+    { 
+      variables: { query: `title:${sanitizedTerm}*` },
+      revalidate: 300 // 5 minutos de cache para busca
+    }
   );
-  return response.data?.products?.edges || [];
+  return res.data?.products?.edges || [];
 }
+
+

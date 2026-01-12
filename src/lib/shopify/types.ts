@@ -98,3 +98,20 @@ export interface ShopifyCart {
   lines: Connection<CartLine>;
   totalQuantity: number;
 }
+
+
+export interface ShopifyError {
+  message: string;
+  locations?: { line: number; column: number }[];
+  path?: string[];
+  extensions?: {
+    code?: string;
+    documentation?: string;
+  };
+}
+
+// Interface Genérica de Resposta da Shopify
+export interface ShopifyResponse<T> {
+  data?: T;
+  errors?: ShopifyError[];
+}

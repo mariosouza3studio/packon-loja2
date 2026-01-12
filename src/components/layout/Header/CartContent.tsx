@@ -1,8 +1,8 @@
+// src/components/layout/Header/CartContent.tsx
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { Trash2, ArrowLeft } from "lucide-react"; // Removidos Plus e Minus
+import { Trash2, ArrowLeft, ShoppingBag } from "lucide-react";
 import styles from "./cartContent.module.css";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/format";
@@ -13,21 +13,17 @@ interface CartContentProps {
 }
 
 export default function CartContent({ onBack }: CartContentProps) {
-  const { cart, removeItem } = useCartStore(); // Removido updateQuantity
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const { cart, removeItem, isLoading } = useCartStore();
 
   if (!cart) return null;
 
   const lines = cart.lines?.edges || [];
   const subtotal = cart.cost?.subtotalAmount;
 
-  const handleRemove = async (lineId: string) => {
-    setIsUpdating(lineId);
-    await removeItem(lineId);
-    setIsUpdating(null);
+  // Handler simplificado (Store cuida do resto)
+  const handleRemove = (lineId: string) => {
+    removeItem(lineId);
   };
-
-  // REMOVIDA A FUNÇÃO handleUpdateQty
 
   // --- CABEÇALHO DO MOBILE (Botão Voltar) ---
   const mobileHeader = onBack && (
@@ -42,7 +38,11 @@ export default function CartContent({ onBack }: CartContentProps) {
       <div className={styles.container}>
         {mobileHeader}
         <div className={styles.emptyState}>
+          <div className={styles.emptyIconWrapper}>
+            <ShoppingBag size={48} strokeWidth={1} />
+          </div>
           <p>Seu carrinho está vazio.</p>
+          <span className={styles.emptySubtitle}>Navegue pelo catálogo para adicionar itens.</span>
         </div>
       </div>
     );
@@ -57,19 +57,16 @@ export default function CartContent({ onBack }: CartContentProps) {
         {lines.map(({ node }: { node: CartLine }) => { 
           const merchandise = node.merchandise;
           const product = merchandise.product;
-          const isLoading = isUpdating === node.id;
-
-
 
           return (
-            <div key={node.id} className={styles.row} style={{ opacity: isLoading ? 0.5 : 1 }}>
+            <div key={node.id} className={styles.row}>
               <div className={styles.imageCircle}>
                 {product.images.edges[0] ? (
                    <Image 
                      src={product.images.edges[0].node.url} 
                      alt={product.title} 
-                     width={40} 
-                     height={40} 
+                     width={50} 
+                     height={50} 
                      className={styles.productImg}
                    />
                 ) : (
@@ -79,26 +76,24 @@ export default function CartContent({ onBack }: CartContentProps) {
               
               <div className={styles.colName}>
                 <span className={styles.productName}>{product.title}</span>
+                {/* Mostra variante se existir e não for "Default Title" */}
+                {merchandise.title !== "Default Title" && (
+                   <span className={styles.variantName}>{merchandise.title}</span>
+                )}
               </div>
               
-              {/* Mantido colInfo para alinhamento */}
-
-
-              {/* MANTIDO O STEPPER VISUALMENTE PARA PRESERVAR O LAYOUT 
-                  Mas agora ele é apenas um display estático
-              */}
               <div className={styles.stepper}>
-                <span className={styles.stepValue}>{node.quantity} item(s)</span>
+                <span className={styles.stepValue}>{node.quantity} un.</span>
               </div>
 
               <div className={styles.colPrice}>
-                <span>Valor: {formatPrice(merchandise.price.amount, merchandise.price.currencyCode)}</span>
+                <span>{formatPrice(merchandise.price.amount, merchandise.price.currencyCode)}</span>
               </div>
               
               <button 
                 onClick={() => handleRemove(node.id)}
-                disabled={!!isUpdating}
                 className={styles.trashBtn}
+                aria-label="Remover item"
               >
                 <Trash2 size={18} />
               </button>
@@ -109,13 +104,14 @@ export default function CartContent({ onBack }: CartContentProps) {
 
       <div className={styles.footer}>
         <div className={styles.subtotalWrapper}>
-          <span>Subtotal: </span>
+          <span className={styles.subtotalLabel}>Subtotal: </span>
           <span className={styles.subtotalValue}>
-            {subtotal ? formatPrice(subtotal.amount, subtotal.currencyCode) : 'R$ 0,00'}
+            {subtotal ? formatPrice(subtotal.amount, subtotal.currencyCode) : 'Calculando...'}
           </span>
         </div>
+        
         <a href={cart.checkoutUrl} className={styles.checkoutBtn}>
-          Finalizar compra
+           {isLoading ? 'Atualizando...' : 'Finalizar compra'}
         </a>
       </div>
     </div>

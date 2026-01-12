@@ -15,6 +15,7 @@ import { useProductVariant } from "@/hooks/useProductVariant";
 import { useShipping } from "@/hooks/useShipping";
 import { toast } from "sonner";
 import { ShopifyProduct } from "@/lib/shopify/types";
+import { sanitizeHtml } from "@/utils/sanitize";
 
 interface ProductViewProps {
   product: ShopifyProduct;
@@ -330,7 +331,8 @@ export default function ProductView({ product }: ProductViewProps) {
             <h2 className={styles.specsTitle}>Detalhes técnicos</h2>
             <div 
                 className={styles.specsContent}
-                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} 
+                // BLINDAGEM: Passando pelo sanitizador antes de renderizar
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.descriptionHtml) }} 
             />
         </div>
       </ScrollReveal>
